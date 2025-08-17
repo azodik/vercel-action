@@ -1,18 +1,57 @@
-import * as github from "@actions/github";
-import context from "./config.js";
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.init = void 0;
+const github = __importStar(require("@actions/github"));
+const config_js_1 = __importDefault(require("./config.js"));
 const init = () => {
-    const client = github.getOctokit(context.GITHUB_TOKEN, {
+    const client = github.getOctokit(config_js_1.default.GITHUB_TOKEN, {
         previews: ["flash", "ant-man"],
     });
     let deploymentId;
     const createDeployment = async () => {
         const deployment = await client["rest"].repos.createDeployment({
-            owner: context.USER,
-            repo: context.REPOSITORY,
-            ref: context.REF,
+            owner: config_js_1.default.USER,
+            repo: config_js_1.default.REPOSITORY,
+            ref: config_js_1.default.REF,
             required_contexts: [],
-            environment: context.GITHUB_DEPLOYMENT_ENV ||
-                (context.PRODUCTION ? "Production" : "Preview"),
+            environment: config_js_1.default.GITHUB_DEPLOYMENT_ENV ||
+                (config_js_1.default.PRODUCTION ? "Production" : "Preview"),
             description: "Deploy to Vercel",
             auto_merge: false,
         });
@@ -28,24 +67,24 @@ const init = () => {
             return;
         }
         const deploymentStatus = await client["rest"].repos.createDeploymentStatus({
-            owner: context.USER,
-            repo: context.REPOSITORY,
+            owner: config_js_1.default.USER,
+            repo: config_js_1.default.REPOSITORY,
             deployment_id: deploymentId,
             state: status,
-            log_url: context.LOG_URL,
-            environment_url: url || context.LOG_URL,
+            log_url: config_js_1.default.LOG_URL,
+            environment_url: url || config_js_1.default.LOG_URL,
             description: "Starting deployment to Vercel",
         });
         return deploymentStatus.data;
     };
     const deleteExistingComment = async () => {
-        if (!context.PR_NUMBER) {
+        if (!config_js_1.default.PR_NUMBER) {
             throw new Error("PR_NUMBER is required for this operation");
         }
         const { data } = await client["rest"].issues.listComments({
-            owner: context.USER,
-            repo: context.REPOSITORY,
-            issue_number: context.PR_NUMBER,
+            owner: config_js_1.default.USER,
+            repo: config_js_1.default.REPOSITORY,
+            issue_number: config_js_1.default.PR_NUMBER,
         });
         if (data.length < 1) {
             return undefined;
@@ -53,8 +92,8 @@ const init = () => {
         const comment = data.find((comment) => comment.body?.includes("This pull request has been deployed to Vercel."));
         if (comment) {
             await client["rest"].issues.deleteComment({
-                owner: context.USER,
-                repo: context.REPOSITORY,
+                owner: config_js_1.default.USER,
+                repo: config_js_1.default.REPOSITORY,
                 comment_id: comment.id,
             });
             return comment.id;
@@ -64,34 +103,34 @@ const init = () => {
     const createComment = async (body) => {
         // Remove indentation
         const dedented = body.replace(/^[^\S\n]+/gm, "");
-        if (!context.PR_NUMBER) {
+        if (!config_js_1.default.PR_NUMBER) {
             throw new Error("PR_NUMBER is required for this operation");
         }
         const comment = await client["rest"].issues.createComment({
-            owner: context.USER,
-            repo: context.REPOSITORY,
-            issue_number: context.PR_NUMBER,
+            owner: config_js_1.default.USER,
+            repo: config_js_1.default.REPOSITORY,
+            issue_number: config_js_1.default.PR_NUMBER,
             body: dedented,
         });
         return comment.data;
     };
     const addLabel = async () => {
-        if (!context.PR_NUMBER) {
+        if (!config_js_1.default.PR_NUMBER) {
             throw new Error("PR_NUMBER is required for this operation");
         }
         const label = await client["rest"].issues.addLabels({
-            owner: context.USER,
-            repo: context.REPOSITORY,
-            issue_number: context.PR_NUMBER,
-            labels: context.PR_LABELS,
+            owner: config_js_1.default.USER,
+            repo: config_js_1.default.REPOSITORY,
+            issue_number: config_js_1.default.PR_NUMBER,
+            labels: config_js_1.default.PR_LABELS,
         });
         return label.data;
     };
     const getCommit = async () => {
         const { data } = await client["rest"].repos.getCommit({
-            owner: context.USER,
-            repo: context.REPOSITORY,
-            ref: context.REF,
+            owner: config_js_1.default.USER,
+            repo: config_js_1.default.REPOSITORY,
+            ref: config_js_1.default.REF,
         });
         return {
             authorName: data.commit.author?.name || "",
@@ -109,5 +148,5 @@ const init = () => {
         getCommit,
     };
 };
-export { init };
+exports.init = init;
 //# sourceMappingURL=github.js.map

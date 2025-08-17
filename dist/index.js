@@ -1,9 +1,765 @@
-import { createRequire as __WEBPACK_EXTERNAL_createRequire } from "module";
-/******/ var __webpack_modules__ = ({
+/******/ (() => { // webpackBootstrap
+/******/ 	var __webpack_modules__ = ({
+
+/***/ 1945:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(9999));
+const github = __importStar(__nccwpck_require__(5380));
+const action_input_parser_1 = __importDefault(__nccwpck_require__(846));
+__nccwpck_require__(6301);
+const IS_PR = ["pull_request", "pull_request_target"].includes(github.context.eventName);
+const context = {
+    GITHUB_TOKEN: action_input_parser_1.default.getInput(["GH_PAT", "GITHUB_TOKEN"], {
+        required: true,
+    }),
+    VERCEL_TOKEN: action_input_parser_1.default.getInput("VERCEL_TOKEN", { required: true }),
+    VERCEL_ORG_ID: action_input_parser_1.default.getInput("VERCEL_ORG_ID", { required: true }),
+    VERCEL_PROJECT_ID: action_input_parser_1.default.getInput("VERCEL_PROJECT_ID", {
+        required: true,
+    }),
+    PRODUCTION: action_input_parser_1.default.getInput("PRODUCTION", {
+        type: "boolean",
+        default: !IS_PR,
+    }),
+    GITHUB_DEPLOYMENT: action_input_parser_1.default.getInput("GITHUB_DEPLOYMENT", {
+        type: "boolean",
+        default: true,
+    }),
+    CREATE_COMMENT: action_input_parser_1.default.getInput("CREATE_COMMENT", {
+        type: "boolean",
+        default: true,
+    }),
+    DELETE_EXISTING_COMMENT: action_input_parser_1.default.getInput("DELETE_EXISTING_COMMENT", {
+        type: "boolean",
+        default: true,
+    }),
+    ATTACH_COMMIT_METADATA: action_input_parser_1.default.getInput("ATTACH_COMMIT_METADATA", {
+        type: "boolean",
+        default: true,
+    }),
+    DEPLOY_PR_FROM_FORK: action_input_parser_1.default.getInput("DEPLOY_PR_FROM_FORK", {
+        type: "boolean",
+        default: false,
+    }),
+    PR_LABELS: action_input_parser_1.default.getInput("PR_LABELS", {
+        default: ["deployed"],
+        type: "array",
+        disableable: true,
+    }),
+    ALIAS_DOMAINS: action_input_parser_1.default.getInput("ALIAS_DOMAINS", {
+        type: "array",
+        disableable: true,
+    }),
+    PR_PREVIEW_DOMAIN: action_input_parser_1.default.getInput("PR_PREVIEW_DOMAIN", {}),
+    VERCEL_SCOPE: action_input_parser_1.default.getInput("VERCEL_SCOPE", {}),
+    GITHUB_REPOSITORY: action_input_parser_1.default.getInput("GITHUB_REPOSITORY", {
+        required: true,
+    }),
+    GITHUB_DEPLOYMENT_ENV: action_input_parser_1.default.getInput("GITHUB_DEPLOYMENT_ENV", {}),
+    TRIM_COMMIT_MESSAGE: action_input_parser_1.default.getInput("TRIM_COMMIT_MESSAGE", {
+        type: "boolean",
+        default: false,
+    }),
+    WORKING_DIRECTORY: action_input_parser_1.default.getInput("WORKING_DIRECTORY", {}),
+    BUILD_ENV: action_input_parser_1.default.getInput("BUILD_ENV", { type: "array" }),
+    PREBUILT: action_input_parser_1.default.getInput("PREBUILT", {
+        type: "boolean",
+        default: false,
+    }),
+    RUNNING_LOCAL: process.env["RUNNING_LOCAL"] === "true",
+    FORCE: action_input_parser_1.default.getInput("FORCE", {
+        type: "boolean",
+        default: false,
+    }),
+    USER: "",
+    REPOSITORY: "",
+    SHA: "",
+    IS_PR: false,
+    REF: "",
+    BRANCH: "",
+    LOG_URL: "",
+    ACTOR: "",
+    IS_FORK: false,
+};
+const setDynamicVars = () => {
+    const [user, repo] = context.GITHUB_REPOSITORY.split("/");
+    context.USER = user || "";
+    context.REPOSITORY = repo || "";
+    // If running the action locally, use env vars instead of github.context
+    if (context.RUNNING_LOCAL) {
+        context.SHA = process.env["SHA"] || "XXXXXXX";
+        context.IS_PR = process.env["IS_PR"] === "true" || false;
+        const prNumber = process.env["PR_NUMBER"];
+        context.PR_NUMBER = prNumber ? parseInt(prNumber, 10) : undefined;
+        context.REF = process.env["REF"] || "refs/heads/master";
+        context.BRANCH = process.env["BRANCH"] || "master";
+        context.PRODUCTION = process.env["PRODUCTION"] === "true" || !context.IS_PR;
+        context.LOG_URL =
+            process.env["LOG_URL"] ||
+                `https://github.com/${context.USER}/${context.REPOSITORY}`;
+        context.ACTOR = process.env["ACTOR"] || context.USER;
+        context.IS_FORK = process.env["IS_FORK"] === "true" || false;
+        context.TRIM_COMMIT_MESSAGE =
+            process.env["TRIM_COMMIT_MESSAGE"] === "true" || false;
+        return;
+    }
+    context.IS_PR = IS_PR;
+    context.LOG_URL = `https://github.com/${context.USER}/${context.REPOSITORY}/actions/runs/${process.env["GITHUB_RUN_ID"]}`;
+    // Use different values depending on if the Action was triggered by a PR
+    if (context.IS_PR) {
+        context.PR_NUMBER = github.context.payload["number"];
+        context.ACTOR = github.context.payload.pull_request?.["user"].login || "";
+        context.REF = github.context.payload.pull_request?.["head"].ref || "";
+        context.SHA = github.context.payload.pull_request?.["head"].sha || "";
+        context.BRANCH = github.context.payload.pull_request?.["head"].ref || "";
+        context.IS_FORK =
+            github.context.payload.pull_request?.["head"].repo.full_name !==
+                context.GITHUB_REPOSITORY;
+    }
+    else {
+        context.ACTOR = github.context.actor;
+        context.REF = github.context.ref;
+        context.SHA = github.context.sha;
+        context.BRANCH = github.context.ref.substr(11);
+    }
+};
+setDynamicVars();
+core.setSecret(context.GITHUB_TOKEN);
+core.setSecret(context.VERCEL_TOKEN);
+core.debug(JSON.stringify(context, null, 2));
+exports["default"] = context;
+//# sourceMappingURL=config.js.map
+
+/***/ }),
+
+/***/ 9700:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.init = void 0;
+const github = __importStar(__nccwpck_require__(5380));
+const config_js_1 = __importDefault(__nccwpck_require__(1945));
+const init = () => {
+    const client = github.getOctokit(config_js_1.default.GITHUB_TOKEN, {
+        previews: ["flash", "ant-man"],
+    });
+    let deploymentId;
+    const createDeployment = async () => {
+        const deployment = await client["rest"].repos.createDeployment({
+            owner: config_js_1.default.USER,
+            repo: config_js_1.default.REPOSITORY,
+            ref: config_js_1.default.REF,
+            required_contexts: [],
+            environment: config_js_1.default.GITHUB_DEPLOYMENT_ENV ||
+                (config_js_1.default.PRODUCTION ? "Production" : "Preview"),
+            description: "Deploy to Vercel",
+            auto_merge: false,
+        });
+        if ("message" in deployment.data) {
+            throw new Error(`GitHub API error: ${deployment.data.message}`);
+        }
+        const deploymentData = deployment.data;
+        deploymentId = deploymentData.id;
+        return deploymentData;
+    };
+    const updateDeployment = async (status, url) => {
+        if (!deploymentId) {
+            return;
+        }
+        const deploymentStatus = await client["rest"].repos.createDeploymentStatus({
+            owner: config_js_1.default.USER,
+            repo: config_js_1.default.REPOSITORY,
+            deployment_id: deploymentId,
+            state: status,
+            log_url: config_js_1.default.LOG_URL,
+            environment_url: url || config_js_1.default.LOG_URL,
+            description: "Starting deployment to Vercel",
+        });
+        return deploymentStatus.data;
+    };
+    const deleteExistingComment = async () => {
+        if (!config_js_1.default.PR_NUMBER) {
+            throw new Error("PR_NUMBER is required for this operation");
+        }
+        const { data } = await client["rest"].issues.listComments({
+            owner: config_js_1.default.USER,
+            repo: config_js_1.default.REPOSITORY,
+            issue_number: config_js_1.default.PR_NUMBER,
+        });
+        if (data.length < 1) {
+            return undefined;
+        }
+        const comment = data.find((comment) => comment.body?.includes("This pull request has been deployed to Vercel."));
+        if (comment) {
+            await client["rest"].issues.deleteComment({
+                owner: config_js_1.default.USER,
+                repo: config_js_1.default.REPOSITORY,
+                comment_id: comment.id,
+            });
+            return comment.id;
+        }
+        return undefined;
+    };
+    const createComment = async (body) => {
+        // Remove indentation
+        const dedented = body.replace(/^[^\S\n]+/gm, "");
+        if (!config_js_1.default.PR_NUMBER) {
+            throw new Error("PR_NUMBER is required for this operation");
+        }
+        const comment = await client["rest"].issues.createComment({
+            owner: config_js_1.default.USER,
+            repo: config_js_1.default.REPOSITORY,
+            issue_number: config_js_1.default.PR_NUMBER,
+            body: dedented,
+        });
+        return comment.data;
+    };
+    const addLabel = async () => {
+        if (!config_js_1.default.PR_NUMBER) {
+            throw new Error("PR_NUMBER is required for this operation");
+        }
+        const label = await client["rest"].issues.addLabels({
+            owner: config_js_1.default.USER,
+            repo: config_js_1.default.REPOSITORY,
+            issue_number: config_js_1.default.PR_NUMBER,
+            labels: config_js_1.default.PR_LABELS,
+        });
+        return label.data;
+    };
+    const getCommit = async () => {
+        const { data } = await client["rest"].repos.getCommit({
+            owner: config_js_1.default.USER,
+            repo: config_js_1.default.REPOSITORY,
+            ref: config_js_1.default.REF,
+        });
+        return {
+            authorName: data.commit.author?.name || "",
+            authorLogin: data.author?.login || "",
+            commitMessage: data.commit.message,
+        };
+    };
+    return {
+        client,
+        createDeployment,
+        updateDeployment,
+        deleteExistingComment,
+        createComment,
+        addLabel,
+        getCommit,
+    };
+};
+exports.init = init;
+//# sourceMappingURL=github.js.map
+
+/***/ }),
+
+/***/ 8402:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.removeSchema = exports.addSchema = exports.exec = void 0;
+const core = __importStar(__nccwpck_require__(9999));
+const child_process_1 = __nccwpck_require__(5317);
+const execCmd = (command, args, cwd) => {
+    core.debug(`EXEC: "${command} ${args}" in ${cwd || "."}`);
+    return new Promise((resolve, reject) => {
+        const process = (0, child_process_1.spawn)(command, args, { cwd });
+        let stdout = "";
+        let stderr = "";
+        process.stdout.on("data", (data) => {
+            core.debug(data.toString());
+            if (data !== undefined && data.length > 0) {
+                stdout += data;
+            }
+        });
+        process.stderr.on("data", (data) => {
+            core.debug(data.toString());
+            if (data !== undefined && data.length > 0) {
+                stderr += data;
+            }
+        });
+        process.on("close", (code) => {
+            if (code !== 0) {
+                reject(new Error(stderr));
+            }
+            else {
+                resolve(stdout.trim());
+            }
+        });
+    });
+};
+exports.exec = execCmd;
+const addSchema = (url) => {
+    const regex = /^https?:\/\//;
+    if (!regex.test(url)) {
+        return `https://${url}`;
+    }
+    return url;
+};
+exports.addSchema = addSchema;
+const removeSchema = (url) => {
+    const regex = /^https?:\/\//;
+    return url.replace(regex, "");
+};
+exports.removeSchema = removeSchema;
+//# sourceMappingURL=helpers.js.map
+
+/***/ }),
+
+/***/ 9939:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(9999));
+const crypto_1 = __nccwpck_require__(6982);
+const github_js_1 = __nccwpck_require__(9700);
+const vercel_js_1 = __nccwpck_require__(4352);
+const helpers_js_1 = __nccwpck_require__(8402);
+const config_js_1 = __importDefault(__nccwpck_require__(1945));
+const urlSafeParameter = (input) => input.replace(/[^a-z0-9_~]/gi, "-");
+const run = async () => {
+    const github = (0, github_js_1.init)();
+    // Refuse to deploy an untrusted fork
+    if (config_js_1.default.IS_FORK === true && config_js_1.default.DEPLOY_PR_FROM_FORK === false) {
+        core.warning("PR is from fork and DEPLOY_PR_FROM_FORK is set to false");
+        const body = `
+			Refusing to deploy this Pull Request to Vercel because it originates from @${config_js_1.default.ACTOR}'s fork.
+
+			**@${config_js_1.default.USER}** To allow this behaviour set \`DEPLOY_PR_FROM_FORK\` to true ([more info](https://github.com/BetaHuhn/deploy-to-vercel-action#deploying-a-pr-made-from-a-fork-or-dependabot)).
+		`;
+        const comment = await github.createComment(body);
+        core.info(`Comment created: ${comment.html_url}`);
+        core.setOutput("DEPLOYMENT_CREATED", false);
+        core.setOutput("COMMENT_CREATED", true);
+        core.info("Done");
+        return;
+    }
+    if (config_js_1.default.GITHUB_DEPLOYMENT) {
+        core.info("Creating GitHub deployment");
+        const ghDeployment = await github.createDeployment();
+        core.info(`Deployment #${ghDeployment.id} created`);
+        await github.updateDeployment("pending");
+        core.info(`Deployment #${ghDeployment.id} status changed to "pending"`);
+    }
+    try {
+        core.info("Creating deployment with Vercel CLI");
+        const vercel = (0, vercel_js_1.init)();
+        const commit = config_js_1.default.ATTACH_COMMIT_METADATA
+            ? await github.getCommit()
+            : undefined;
+        const deploymentUrl = await vercel.deploy(commit);
+        core.info("Successfully deployed to Vercel!");
+        const deploymentUrls = [];
+        if (config_js_1.default.IS_PR && config_js_1.default.PR_PREVIEW_DOMAIN) {
+            core.info("Assigning custom preview domain to PR");
+            if (typeof config_js_1.default.PR_PREVIEW_DOMAIN !== "string") {
+                throw new Error("invalid type for PR_PREVIEW_DOMAIN");
+            }
+            const alias = config_js_1.default.PR_PREVIEW_DOMAIN.replace("{USER}", urlSafeParameter(config_js_1.default.USER))
+                .replace("{REPO}", urlSafeParameter(config_js_1.default.REPOSITORY))
+                .replace("{BRANCH}", urlSafeParameter(config_js_1.default.BRANCH))
+                .replace("{PR}", config_js_1.default.PR_NUMBER?.toString() || "")
+                .replace("{SHA}", config_js_1.default.SHA.substring(0, 7))
+                .toLowerCase();
+            const previewDomainSuffix = ".vercel.app";
+            let nextAlias = alias;
+            if (alias.endsWith(previewDomainSuffix)) {
+                let prefix = alias.substring(0, alias.indexOf(previewDomainSuffix));
+                if (prefix.length >= 60) {
+                    core.warning(`The alias ${prefix} exceeds 60 chars in length, truncating using vercel's rules. See https://vercel.com/docs/concepts/deployments/automatic-urls#automatic-branch-urls`);
+                    prefix = prefix.substring(0, 55);
+                    const uniqueSuffix = (0, crypto_1.createHash)("sha256")
+                        .update(`git-${config_js_1.default.BRANCH}-${config_js_1.default.REPOSITORY}`)
+                        .digest("hex")
+                        .slice(0, 6);
+                    nextAlias = `${prefix}-${uniqueSuffix}${previewDomainSuffix}`;
+                    core.info(`Updated domain alias: ${nextAlias}`);
+                }
+            }
+            await vercel.assignAlias(nextAlias);
+            deploymentUrls.push((0, helpers_js_1.addSchema)(nextAlias));
+        }
+        if (!config_js_1.default.IS_PR && config_js_1.default.ALIAS_DOMAINS) {
+            core.info("Assigning custom domains to Vercel deployment");
+            if (!Array.isArray(config_js_1.default.ALIAS_DOMAINS)) {
+                throw new Error("invalid type for PR_PREVIEW_DOMAIN");
+            }
+            for (let i = 0; i < config_js_1.default.ALIAS_DOMAINS.length; i++) {
+                const alias = config_js_1.default.ALIAS_DOMAINS[i];
+                if (!alias) {
+                    continue;
+                }
+                const processedAlias = alias
+                    .replace("{USER}", urlSafeParameter(config_js_1.default.USER))
+                    .replace("{REPO}", urlSafeParameter(config_js_1.default.REPOSITORY))
+                    .replace("{BRANCH}", urlSafeParameter(config_js_1.default.BRANCH))
+                    .replace("{SHA}", config_js_1.default.SHA.substring(0, 7))
+                    .toLowerCase();
+                await vercel.assignAlias(processedAlias);
+                deploymentUrls.push((0, helpers_js_1.addSchema)(processedAlias));
+            }
+        }
+        deploymentUrls.push((0, helpers_js_1.addSchema)(deploymentUrl));
+        const previewUrl = deploymentUrls[0];
+        const deployment = await vercel.getDeployment();
+        core.info(`Deployment "${deployment.id}" available at: ${deploymentUrls.join(", ")}`);
+        if (config_js_1.default.GITHUB_DEPLOYMENT) {
+            core.info('Changing GitHub deployment status to "success"');
+            await github.updateDeployment("success", previewUrl);
+        }
+        if (config_js_1.default.IS_PR) {
+            if (config_js_1.default.DELETE_EXISTING_COMMENT) {
+                core.info("Checking for existing comment on PR");
+                const deletedCommentId = await github.deleteExistingComment();
+                if (deletedCommentId) {
+                    core.info(`Deleted existing comment #${deletedCommentId}`);
+                }
+            }
+            if (config_js_1.default.CREATE_COMMENT) {
+                core.info("Creating new comment on PR");
+                const body = `
+					This pull request has been deployed to Vercel.
+
+					<table>
+						<tr>
+							<td><strong>Latest commit:</strong></td>
+							<td><code>${config_js_1.default.SHA.substring(0, 7)}</code></td>
+						</tr>
+						<tr>
+							<td><strong>✅ Preview:</strong></td>
+							<td><a href='${previewUrl}'>${previewUrl}</a></td>
+						</tr>
+						<tr>
+							<td><strong>🔍 Inspect:</strong></td>
+							<td><a href='${deployment.inspectorUrl}'>${deployment.inspectorUrl}</a></td>
+						</tr>
+					</table>
+
+					[View Workflow Logs](${config_js_1.default.LOG_URL})
+				`;
+                const comment = await github.createComment(body);
+                core.info(`Comment created: ${comment.html_url}`);
+            }
+            if (config_js_1.default.PR_LABELS) {
+                core.info("Adding label(s) to PR");
+                const labels = await github.addLabel();
+                core.info(`Label(s) "${labels.map((label) => label.name).join(", ")}" added`);
+            }
+        }
+        core.setOutput("PREVIEW_URL", previewUrl);
+        core.setOutput("DEPLOYMENT_URLS", deploymentUrls);
+        core.setOutput("DEPLOYMENT_UNIQUE_URL", deploymentUrls[deploymentUrls.length - 1]);
+        core.setOutput("DEPLOYMENT_ID", deployment.id);
+        core.setOutput("DEPLOYMENT_INSPECTOR_URL", deployment.inspectorUrl);
+        core.setOutput("DEPLOYMENT_CREATED", true);
+        core.setOutput("COMMENT_CREATED", config_js_1.default.IS_PR && config_js_1.default.CREATE_COMMENT);
+        core.info("Done");
+    }
+    catch (err) {
+        await github.updateDeployment("failure");
+        core.setFailed(err instanceof Error ? err.message : String(err));
+    }
+};
+run()
+    .then(() => { })
+    .catch((err) => {
+    core.error("ERROR");
+    core.setFailed(err instanceof Error ? err.message : String(err));
+});
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+
+/***/ 4352:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.init = void 0;
+const core = __importStar(__nccwpck_require__(9999));
+const helpers_js_1 = __nccwpck_require__(8402);
+const config_js_1 = __importDefault(__nccwpck_require__(1945));
+const init = () => {
+    core.info("Setting environment variables for Vercel CLI");
+    core.exportVariable("VERCEL_ORG_ID", config_js_1.default.VERCEL_ORG_ID);
+    core.exportVariable("VERCEL_PROJECT_ID", config_js_1.default.VERCEL_PROJECT_ID);
+    let deploymentUrl = "";
+    const deploy = async (commit) => {
+        let commandArguments = [`--token=${config_js_1.default.VERCEL_TOKEN}`];
+        if (config_js_1.default.VERCEL_SCOPE) {
+            commandArguments.push(`--scope=${config_js_1.default.VERCEL_SCOPE}`);
+        }
+        if (config_js_1.default.PRODUCTION) {
+            commandArguments.push("--prod");
+        }
+        if (config_js_1.default.PREBUILT) {
+            commandArguments.push("--prebuilt");
+        }
+        if (config_js_1.default.FORCE) {
+            commandArguments.push("--force");
+        }
+        if (commit) {
+            const metadata = [
+                `githubCommitAuthorName=${commit.authorName}`,
+                `githubCommitAuthorLogin=${commit.authorLogin}`,
+                `githubCommitMessage=${config_js_1.default.TRIM_COMMIT_MESSAGE
+                    ? commit.commitMessage.split(/\r?\n/)[0]
+                    : commit.commitMessage}`,
+                `githubCommitOrg=${config_js_1.default.USER}`,
+                `githubCommitRepo=${config_js_1.default.REPOSITORY}`,
+                `githubCommitRef=${config_js_1.default.REF}`,
+                `githubCommitSha=${config_js_1.default.SHA}`,
+                `githubOrg=${config_js_1.default.USER}`,
+                `githubRepo=${config_js_1.default.REPOSITORY}`,
+                "githubDeployment=1",
+            ];
+            metadata.forEach((item) => {
+                commandArguments = commandArguments.concat(["--meta", item]);
+            });
+        }
+        if (config_js_1.default.BUILD_ENV) {
+            config_js_1.default.BUILD_ENV.forEach((item) => {
+                commandArguments = commandArguments.concat(["--build-env", item]);
+            });
+        }
+        core.info("Starting deploy with Vercel CLI");
+        const output = await (0, helpers_js_1.exec)("vercel", commandArguments, config_js_1.default.WORKING_DIRECTORY);
+        const parsed = output.match(/(?<=https?:\/\/)(.*)/g)?.[0];
+        if (!parsed) {
+            throw new Error("Could not parse deploymentUrl");
+        }
+        deploymentUrl = parsed;
+        return deploymentUrl;
+    };
+    const assignAlias = async (aliasUrl) => {
+        const commandArguments = [
+            `--token=${config_js_1.default.VERCEL_TOKEN}`,
+            "alias",
+            "set",
+            deploymentUrl,
+            (0, helpers_js_1.removeSchema)(aliasUrl),
+        ];
+        if (config_js_1.default.VERCEL_SCOPE) {
+            commandArguments.push(`--scope=${config_js_1.default.VERCEL_SCOPE}`);
+        }
+        const output = await (0, helpers_js_1.exec)("vercel", commandArguments, config_js_1.default.WORKING_DIRECTORY);
+        return output;
+    };
+    const getDeployment = async () => {
+        const url = `https://api.vercel.com/v13/deployments/${deploymentUrl}`;
+        const options = {
+            headers: {
+                Authorization: `Bearer ${config_js_1.default.VERCEL_TOKEN}`,
+            },
+        };
+        const got = (await __nccwpck_require__.e(/* import() */ 398).then(__nccwpck_require__.bind(__nccwpck_require__, 4398))).default;
+        const res = (await got(url, options).json());
+        return res;
+    };
+    return {
+        deploy,
+        assignAlias,
+        deploymentUrl,
+        getDeployment,
+    };
+};
+exports.init = init;
+//# sourceMappingURL=vercel.js.map
+
+/***/ }),
 
 /***/ 3191:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
+"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -106,6 +862,7 @@ function escapeProperty(s) {
 /***/ 9999:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
+"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -456,6 +1213,7 @@ exports.platform = __importStar(__nccwpck_require__(2563));
 /***/ 9058:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
+"use strict";
 
 // For internal use, subject to change.
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -524,6 +1282,7 @@ exports.prepareKeyValueMessage = prepareKeyValueMessage;
 /***/ 3549:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
+"use strict";
 
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -607,6 +1366,7 @@ exports.OidcClient = OidcClient;
 /***/ 539:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
+"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -675,6 +1435,7 @@ exports.toPlatformPath = toPlatformPath;
 /***/ 2563:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
+"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -775,6 +1536,7 @@ exports.getDetails = getDetails;
 /***/ 1638:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
+"use strict";
 
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -1064,6 +1826,7 @@ exports.summary = _summary;
 /***/ 6283:
 /***/ ((__unused_webpack_module, exports) => {
 
+"use strict";
 
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -1110,6 +1873,7 @@ exports.toCommandProperties = toCommandProperties;
 /***/ 8872:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
+"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -1219,6 +1983,7 @@ exports.getExecOutput = getExecOutput;
 /***/ 3725:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
+"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -1843,6 +2608,7 @@ class ExecState extends events.EventEmitter {
 /***/ 9944:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
+"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Context = void 0;
@@ -1905,6 +2671,7 @@ exports.Context = Context;
 /***/ 5380:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
+"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -1952,6 +2719,7 @@ exports.getOctokit = getOctokit;
 /***/ 7276:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
+"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -2028,6 +2796,7 @@ exports.getApiBaseUrl = getApiBaseUrl;
 /***/ 1070:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
+"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -2093,6 +2862,7 @@ exports.getOctokitOptions = getOctokitOptions;
 /***/ 3673:
 /***/ (function(__unused_webpack_module, exports) {
 
+"use strict";
 
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -2180,6 +2950,7 @@ exports.PersonalAccessTokenCredentialHandler = PersonalAccessTokenCredentialHand
 /***/ 787:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
+"use strict";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -2838,6 +3609,7 @@ const lowercaseKeys = (obj) => Object.keys(obj).reduce((c, k) => ((c[k.toLowerCa
 /***/ 7407:
 /***/ ((__unused_webpack_module, exports) => {
 
+"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.checkBypass = exports.getProxyUrl = void 0;
@@ -2939,6 +3711,7 @@ class DecodedURL extends URL {
 /***/ 2746:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
+"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3128,6 +3901,7 @@ exports.getCmdPath = getCmdPath;
 /***/ 3357:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
+"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3433,6 +4207,7 @@ function copyFile(srcFile, destFile, force) {
 /***/ 6602:
 /***/ ((module) => {
 
+"use strict";
 
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -3517,6 +4292,7 @@ var createTokenAuth = function createTokenAuth2(token) {
 /***/ 5997:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -3692,6 +4468,7 @@ var Octokit = class {
 /***/ 423:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -4075,6 +4852,7 @@ var endpoint = withDefaults(null, DEFAULTS);
 /***/ 5219:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -4231,6 +5009,7 @@ function withCustomRequest(customRequest) {
 /***/ 7124:
 /***/ ((module) => {
 
+"use strict";
 
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -4631,6 +5410,7 @@ paginateRest.VERSION = VERSION;
 /***/ 6971:
 /***/ ((module) => {
 
+"use strict";
 
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -6800,6 +7580,7 @@ legacyRestEndpointMethods.VERSION = VERSION;
 /***/ 33:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 var __create = Object.create;
 var __defProp = Object.defineProperty;
@@ -6897,6 +7678,7 @@ var RequestError = class extends Error {
 /***/ 5833:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -7126,6 +7908,7 @@ var request = withDefaults(import_endpoint.endpoint, {
 /***/ 846:
 /***/ (function(module, exports, __nccwpck_require__) {
 
+"use strict";
 
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -7409,6 +8192,7 @@ function removeHook(state, name, method) {
 /***/ 5546:
 /***/ ((__unused_webpack_module, exports) => {
 
+"use strict";
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
@@ -8126,6 +8910,7 @@ module.exports = __nccwpck_require__(3660);
 /***/ 3660:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 var net = __nccwpck_require__(9278);
@@ -8397,6 +9182,7 @@ exports.debug = debug; // for test
 /***/ 298:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const Client = __nccwpck_require__(439)
@@ -8571,6 +9357,7 @@ module.exports.mockErrors = mockErrors
 /***/ 8603:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { InvalidArgumentError } = __nccwpck_require__(1581)
@@ -8787,6 +9574,7 @@ module.exports = {
 /***/ 3290:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { AsyncResource } = __nccwpck_require__(290)
@@ -8898,6 +9686,7 @@ module.exports = connect
 /***/ 9840:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const {
@@ -9154,6 +9943,7 @@ module.exports = pipeline
 /***/ 3333:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const Readable = __nccwpck_require__(1709)
@@ -9341,6 +10131,7 @@ module.exports.RequestHandler = RequestHandler
 /***/ 2310:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { finished, PassThrough } = __nccwpck_require__(2203)
@@ -9568,6 +10359,7 @@ module.exports = stream
 /***/ 7236:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { InvalidArgumentError, RequestAbortedError, SocketError } = __nccwpck_require__(1581)
@@ -9680,6 +10472,7 @@ module.exports = upgrade
 /***/ 8725:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 module.exports.request = __nccwpck_require__(3333)
@@ -9694,6 +10487,7 @@ module.exports.connect = __nccwpck_require__(3290)
 /***/ 1709:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 // Ported from https://github.com/nodejs/undici/pull/907
 
 
@@ -10076,6 +10870,7 @@ module.exports = { getResolveErrorBodyCallback }
 /***/ 3375:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const {
@@ -10273,6 +11068,7 @@ module.exports = BalancedPool
 /***/ 3761:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { kConstruct } = __nccwpck_require__(5914)
@@ -11118,6 +11914,7 @@ module.exports = {
 /***/ 8400:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { kConstruct } = __nccwpck_require__(5914)
@@ -11269,6 +12066,7 @@ module.exports = {
 /***/ 5914:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 module.exports = {
@@ -11281,6 +12079,7 @@ module.exports = {
 /***/ 3175:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const assert = __nccwpck_require__(2613)
@@ -11337,6 +12136,7 @@ module.exports = {
 /***/ 439:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 // @ts-check
 
 
@@ -13627,6 +14427,7 @@ module.exports = Client
 /***/ 1408:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 /* istanbul ignore file: only for Node 12 */
@@ -13682,6 +14483,7 @@ module.exports = function () {
 /***/ 8803:
 /***/ ((module) => {
 
+"use strict";
 
 
 // https://wicg.github.io/cookie-store/#cookie-maximum-attribute-value-size
@@ -13701,6 +14503,7 @@ module.exports = {
 /***/ 7426:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { parseSetCookie } = __nccwpck_require__(7889)
@@ -13891,6 +14694,7 @@ module.exports = {
 /***/ 7889:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { maxNameValuePairSize, maxAttributeValueSize } = __nccwpck_require__(8803)
@@ -14215,6 +15019,7 @@ module.exports = {
 /***/ 3692:
 /***/ ((module) => {
 
+"use strict";
 
 
 /**
@@ -14496,6 +15301,7 @@ module.exports = {
 /***/ 110:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const net = __nccwpck_require__(9278)
@@ -14692,6 +15498,7 @@ module.exports = buildConnector
 /***/ 7281:
 /***/ ((module) => {
 
+"use strict";
 
 
 /** @type {Record<string, string | undefined>} */
@@ -14817,6 +15624,7 @@ module.exports = {
 /***/ 1581:
 /***/ ((module) => {
 
+"use strict";
 
 
 class UndiciError extends Error {
@@ -15054,6 +15862,7 @@ module.exports = {
 /***/ 3505:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const {
@@ -15630,6 +16439,7 @@ module.exports = {
 /***/ 4606:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const assert = __nccwpck_require__(2613)
@@ -16159,6 +16969,7 @@ module.exports = {
 /***/ 9787:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const Dispatcher = __nccwpck_require__(3553)
@@ -16358,6 +17169,7 @@ module.exports = DispatcherBase
 /***/ 3553:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const EventEmitter = __nccwpck_require__(4434)
@@ -16384,6 +17196,7 @@ module.exports = Dispatcher
 /***/ 8009:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const Busboy = __nccwpck_require__(9766)
@@ -17004,6 +17817,7 @@ module.exports = {
 /***/ 7536:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { MessageChannel, receiveMessageOnPort } = __nccwpck_require__(8167)
@@ -17796,6 +18610,7 @@ module.exports = {
 /***/ 4091:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { Blob, File: NativeFile } = __nccwpck_require__(181)
@@ -18147,6 +18962,7 @@ module.exports = { File, FileLike, isFileLike }
 /***/ 1187:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { isBlobLike, toUSVString, makeIterator } = __nccwpck_require__(8961)
@@ -18419,6 +19235,7 @@ module.exports = { FormData }
 /***/ 742:
 /***/ ((module) => {
 
+"use strict";
 
 
 // In case of breaking changes, increase the version
@@ -18466,6 +19283,7 @@ module.exports = {
 /***/ 2223:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 // https://github.com/Ethan-Arrowood/undici-fetch
 
 
@@ -19066,6 +19884,7 @@ module.exports = {
 /***/ 9401:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 // https://github.com/Ethan-Arrowood/undici-fetch
 
 
@@ -21221,6 +22040,7 @@ module.exports = {
 /***/ 2204:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 /* globals AbortController */
 
 
@@ -22174,6 +22994,7 @@ module.exports = { Request, makeRequest }
 /***/ 6062:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { Headers, HeadersList, fill } = __nccwpck_require__(2223)
@@ -22752,6 +23573,7 @@ module.exports = {
 /***/ 1088:
 /***/ ((module) => {
 
+"use strict";
 
 
 module.exports = {
@@ -22769,6 +23591,7 @@ module.exports = {
 /***/ 8961:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { redirectStatusSet, referrerPolicySet: referrerPolicyTokens, badPortsSet } = __nccwpck_require__(7536)
@@ -23920,6 +24743,7 @@ module.exports = {
 /***/ 3476:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { types } = __nccwpck_require__(9023)
@@ -24573,6 +25397,7 @@ module.exports = {
 /***/ 202:
 /***/ ((module) => {
 
+"use strict";
 
 
 /**
@@ -24870,6 +25695,7 @@ module.exports = {
 /***/ 9086:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const {
@@ -25221,6 +26047,7 @@ module.exports = {
 /***/ 5702:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { webidl } = __nccwpck_require__(3476)
@@ -25306,6 +26133,7 @@ module.exports = {
 /***/ 7570:
 /***/ ((module) => {
 
+"use strict";
 
 
 module.exports = {
@@ -25323,6 +26151,7 @@ module.exports = {
 /***/ 367:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const {
@@ -25722,6 +26551,7 @@ module.exports = {
 /***/ 9456:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 // We include a version number for the Dispatcher API. In case of breaking changes,
@@ -25761,6 +26591,7 @@ module.exports = {
 /***/ 1858:
 /***/ ((module) => {
 
+"use strict";
 
 
 module.exports = class DecoratorHandler {
@@ -25803,6 +26634,7 @@ module.exports = class DecoratorHandler {
 /***/ 3897:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const util = __nccwpck_require__(4606)
@@ -26374,6 +27206,7 @@ module.exports = RetryHandler
 /***/ 9509:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const RedirectHandler = __nccwpck_require__(3897)
@@ -26402,6 +27235,7 @@ module.exports = createRedirectInterceptor
 /***/ 862:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
+"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SPECIAL_HEADERS = exports.HEADER_STATE = exports.MINOR = exports.MAJOR = exports.CONNECTION_TOKEN_CHARS = exports.HEADER_CHARS = exports.TOKEN = exports.STRICT_TOKEN = exports.HEX = exports.URL_CHAR = exports.STRICT_URL_CHAR = exports.USERINFO_CHARS = exports.MARK = exports.ALPHANUM = exports.NUM = exports.HEX_MAP = exports.NUM_MAP = exports.ALPHA = exports.FINISH = exports.H_METHOD_MAP = exports.METHOD_MAP = exports.METHODS_RTSP = exports.METHODS_ICE = exports.METHODS_HTTP = exports.METHODS = exports.LENIENT_FLAGS = exports.FLAGS = exports.TYPE = exports.ERROR = void 0;
@@ -26702,6 +27536,7 @@ module.exports = 'AGFzbQEAAAABMAhgAX8Bf2ADf39/AX9gBH9/f38Bf2AAAGADf39/AGABfwBgAn
 /***/ 1910:
 /***/ ((__unused_webpack_module, exports) => {
 
+"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.enumToMap = void 0;
@@ -26723,6 +27558,7 @@ exports.enumToMap = enumToMap;
 /***/ 5343:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { kClients } = __nccwpck_require__(5773)
@@ -26901,6 +27737,7 @@ module.exports = MockAgent
 /***/ 4163:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { promisify } = __nccwpck_require__(9023)
@@ -26967,6 +27804,7 @@ module.exports = MockClient
 /***/ 2255:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { UndiciError } = __nccwpck_require__(1581)
@@ -26991,6 +27829,7 @@ module.exports = {
 /***/ 3445:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { getResponseData, buildKey, addMockDispatch } = __nccwpck_require__(939)
@@ -27204,6 +28043,7 @@ module.exports.MockScope = MockScope
 /***/ 3722:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { promisify } = __nccwpck_require__(9023)
@@ -27270,6 +28110,7 @@ module.exports = MockPool
 /***/ 5367:
 /***/ ((module) => {
 
+"use strict";
 
 
 module.exports = {
@@ -27300,6 +28141,7 @@ module.exports = {
 /***/ 939:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { MockNotMatchedError } = __nccwpck_require__(2255)
@@ -27658,6 +28500,7 @@ module.exports = {
 /***/ 6584:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { Transform } = __nccwpck_require__(2203)
@@ -27705,6 +28548,7 @@ module.exports = class PendingInterceptorsFormatter {
 /***/ 1315:
 /***/ ((module) => {
 
+"use strict";
 
 
 const singulars = {
@@ -27741,6 +28585,7 @@ module.exports = class Pluralizer {
 /***/ 119:
 /***/ ((module) => {
 
+"use strict";
 /* eslint-disable */
 
 
@@ -27865,6 +28710,7 @@ module.exports = class FixedQueue {
 /***/ 9974:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const DispatcherBase = __nccwpck_require__(9787)
@@ -28107,6 +28953,7 @@ module.exports = PoolStats
 /***/ 6086:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const {
@@ -28222,6 +29069,7 @@ module.exports = Pool
 /***/ 6278:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { kProxy, kClose, kDestroy, kInterceptors } = __nccwpck_require__(5773)
@@ -28418,6 +29266,7 @@ module.exports = ProxyAgent
 /***/ 2374:
 /***/ ((module) => {
 
+"use strict";
 
 
 let fastNow = Date.now()
@@ -28522,6 +29371,7 @@ module.exports = {
 /***/ 3760:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const diagnosticsChannel = __nccwpck_require__(1637)
@@ -28820,6 +29670,7 @@ module.exports = {
 /***/ 7875:
 /***/ ((module) => {
 
+"use strict";
 
 
 // This is a Globally Unique Identifier unique used
@@ -28878,6 +29729,7 @@ module.exports = {
 /***/ 8659:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { webidl } = __nccwpck_require__(3476)
@@ -29188,6 +30040,7 @@ module.exports = {
 /***/ 4391:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { maxUnsigned16Bit } = __nccwpck_require__(7875)
@@ -29268,6 +30121,7 @@ module.exports = {
 /***/ 833:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { Writable } = __nccwpck_require__(2203)
@@ -29619,6 +30473,7 @@ module.exports = {
 /***/ 6063:
 /***/ ((module) => {
 
+"use strict";
 
 
 module.exports = {
@@ -29638,6 +30493,7 @@ module.exports = {
 /***/ 588:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { kReadyState, kController, kResponse, kBinaryType, kWebSocketURL } = __nccwpck_require__(6063)
@@ -29845,6 +30701,7 @@ module.exports = {
 /***/ 3853:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const { webidl } = __nccwpck_require__(3476)
@@ -30493,6 +31350,7 @@ module.exports = {
 /***/ 9279:
 /***/ ((__unused_webpack_module, exports) => {
 
+"use strict";
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
@@ -30558,293 +31416,335 @@ function wrappy (fn, cb) {
 /***/ 2613:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("assert");
+"use strict";
+module.exports = require("assert");
 
 /***/ }),
 
 /***/ 290:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("async_hooks");
+"use strict";
+module.exports = require("async_hooks");
 
 /***/ }),
 
 /***/ 181:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("buffer");
+"use strict";
+module.exports = require("buffer");
 
 /***/ }),
 
 /***/ 5317:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("child_process");
+"use strict";
+module.exports = require("child_process");
 
 /***/ }),
 
 /***/ 4236:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("console");
+"use strict";
+module.exports = require("console");
 
 /***/ }),
 
 /***/ 6982:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("crypto");
+"use strict";
+module.exports = require("crypto");
 
 /***/ }),
 
 /***/ 1637:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("diagnostics_channel");
+"use strict";
+module.exports = require("diagnostics_channel");
 
 /***/ }),
 
 /***/ 4434:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("events");
+"use strict";
+module.exports = require("events");
 
 /***/ }),
 
 /***/ 9896:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("fs");
+"use strict";
+module.exports = require("fs");
 
 /***/ }),
 
 /***/ 8611:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("http");
+"use strict";
+module.exports = require("http");
 
 /***/ }),
 
 /***/ 5675:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("http2");
+"use strict";
+module.exports = require("http2");
 
 /***/ }),
 
 /***/ 5692:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("https");
+"use strict";
+module.exports = require("https");
 
 /***/ }),
 
 /***/ 9278:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("net");
+"use strict";
+module.exports = require("net");
 
 /***/ }),
 
 /***/ 4573:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:buffer");
+"use strict";
+module.exports = require("node:buffer");
 
 /***/ }),
 
 /***/ 7598:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:crypto");
+"use strict";
+module.exports = require("node:crypto");
 
 /***/ }),
 
 /***/ 610:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:dns");
+"use strict";
+module.exports = require("node:dns");
 
 /***/ }),
 
 /***/ 8474:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:events");
+"use strict";
+module.exports = require("node:events");
 
 /***/ }),
 
 /***/ 7067:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:http");
+"use strict";
+module.exports = require("node:http");
 
 /***/ }),
 
 /***/ 4708:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:https");
+"use strict";
+module.exports = require("node:https");
 
 /***/ }),
 
 /***/ 7030:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:net");
+"use strict";
+module.exports = require("node:net");
 
 /***/ }),
 
 /***/ 8161:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:os");
+"use strict";
+module.exports = require("node:os");
 
 /***/ }),
 
 /***/ 1708:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:process");
+"use strict";
+module.exports = require("node:process");
 
 /***/ }),
 
 /***/ 7075:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:stream");
+"use strict";
+module.exports = require("node:stream");
 
 /***/ }),
 
 /***/ 8500:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:timers/promises");
+"use strict";
+module.exports = require("node:timers/promises");
 
 /***/ }),
 
 /***/ 1692:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:tls");
+"use strict";
+module.exports = require("node:tls");
 
 /***/ }),
 
 /***/ 3136:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:url");
+"use strict";
+module.exports = require("node:url");
 
 /***/ }),
 
 /***/ 7975:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:util");
+"use strict";
+module.exports = require("node:util");
 
 /***/ }),
 
 /***/ 857:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("os");
+"use strict";
+module.exports = require("os");
 
 /***/ }),
 
 /***/ 6928:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("path");
+"use strict";
+module.exports = require("path");
 
 /***/ }),
 
 /***/ 2987:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("perf_hooks");
+"use strict";
+module.exports = require("perf_hooks");
 
 /***/ }),
 
 /***/ 3480:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("querystring");
+"use strict";
+module.exports = require("querystring");
 
 /***/ }),
 
 /***/ 2203:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("stream");
+"use strict";
+module.exports = require("stream");
 
 /***/ }),
 
 /***/ 3774:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("stream/web");
+"use strict";
+module.exports = require("stream/web");
 
 /***/ }),
 
 /***/ 3193:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("string_decoder");
+"use strict";
+module.exports = require("string_decoder");
 
 /***/ }),
 
 /***/ 3557:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("timers");
+"use strict";
+module.exports = require("timers");
 
 /***/ }),
 
 /***/ 4756:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("tls");
+"use strict";
+module.exports = require("tls");
 
 /***/ }),
 
 /***/ 7016:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("url");
+"use strict";
+module.exports = require("url");
 
 /***/ }),
 
 /***/ 9023:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("util");
+"use strict";
+module.exports = require("util");
 
 /***/ }),
 
 /***/ 8253:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("util/types");
+"use strict";
+module.exports = require("util/types");
 
 /***/ }),
 
 /***/ 8167:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("worker_threads");
+"use strict";
+module.exports = require("worker_threads");
 
 /***/ }),
 
 /***/ 3106:
 /***/ ((module) => {
 
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("zlib");
+"use strict";
+module.exports = require("zlib");
 
 /***/ }),
 
 /***/ 6917:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const WritableStream = (__nccwpck_require__(7075).Writable)
@@ -31065,6 +31965,7 @@ module.exports = Dicer
 /***/ 6890:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const EventEmitter = (__nccwpck_require__(8474).EventEmitter)
@@ -31172,6 +32073,7 @@ module.exports = HeaderParser
 /***/ 5341:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const inherits = (__nccwpck_require__(7975).inherits)
@@ -31192,6 +32094,7 @@ module.exports = PartStream
 /***/ 2820:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 /**
@@ -31427,6 +32330,7 @@ module.exports = SBMH
 /***/ 9766:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const WritableStream = (__nccwpck_require__(7075).Writable)
@@ -31519,6 +32423,7 @@ module.exports.Dicer = Dicer
 /***/ 4945:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 // TODO:
@@ -31832,6 +32737,7 @@ module.exports = Multipart
 /***/ 1724:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 
 
 const Decoder = __nccwpck_require__(393)
@@ -32029,6 +32935,7 @@ module.exports = UrlEncoded
 /***/ 393:
 /***/ ((module) => {
 
+"use strict";
 
 
 const RE_PLUS = /\+/g
@@ -32090,6 +32997,7 @@ module.exports = Decoder
 /***/ 4935:
 /***/ ((module) => {
 
+"use strict";
 
 
 module.exports = function basename (path) {
@@ -32111,6 +33019,7 @@ module.exports = function basename (path) {
 /***/ 3772:
 /***/ (function(module) {
 
+"use strict";
 
 
 // Node has always utf-8
@@ -32232,6 +33141,7 @@ module.exports = decodeText
 /***/ 1954:
 /***/ ((module) => {
 
+"use strict";
 
 
 module.exports = function getLimit (limits, name, defaultLimit) {
@@ -32255,6 +33165,7 @@ module.exports = function getLimit (limits, name, defaultLimit) {
 /***/ 6812:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+"use strict";
 /* eslint-disable object-property-newline */
 
 
@@ -32458,708 +33369,150 @@ module.exports = parseParams
 /***/ 5101:
 /***/ ((module) => {
 
+"use strict";
 module.exports = /*#__PURE__*/JSON.parse('{"name":"dotenv","version":"17.2.1","description":"Loads environment variables from .env file","main":"lib/main.js","types":"lib/main.d.ts","exports":{".":{"types":"./lib/main.d.ts","require":"./lib/main.js","default":"./lib/main.js"},"./config":"./config.js","./config.js":"./config.js","./lib/env-options":"./lib/env-options.js","./lib/env-options.js":"./lib/env-options.js","./lib/cli-options":"./lib/cli-options.js","./lib/cli-options.js":"./lib/cli-options.js","./package.json":"./package.json"},"scripts":{"dts-check":"tsc --project tests/types/tsconfig.json","lint":"standard","pretest":"npm run lint && npm run dts-check","test":"tap run --allow-empty-coverage --disable-coverage --timeout=60000","test:coverage":"tap run --show-full-coverage --timeout=60000 --coverage-report=text --coverage-report=lcov","prerelease":"npm test","release":"standard-version"},"repository":{"type":"git","url":"git://github.com/motdotla/dotenv.git"},"homepage":"https://github.com/motdotla/dotenv#readme","funding":"https://dotenvx.com","keywords":["dotenv","env",".env","environment","variables","config","settings"],"readmeFilename":"README.md","license":"BSD-2-Clause","devDependencies":{"@types/node":"^18.11.3","decache":"^4.6.2","sinon":"^14.0.1","standard":"^17.0.0","standard-version":"^9.5.0","tap":"^19.2.0","typescript":"^4.8.4"},"engines":{"node":">=12"},"browser":{"fs":false}}');
 
 /***/ })
 
-/******/ });
+/******/ 	});
 /************************************************************************/
-/******/ // The module cache
-/******/ var __webpack_module_cache__ = {};
-/******/ 
-/******/ // The require function
-/******/ function __nccwpck_require__(moduleId) {
-/******/ 	// Check if module is in cache
-/******/ 	var cachedModule = __webpack_module_cache__[moduleId];
-/******/ 	if (cachedModule !== undefined) {
-/******/ 		return cachedModule.exports;
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __nccwpck_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		var threw = true;
+/******/ 		try {
+/******/ 			__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nccwpck_require__);
+/******/ 			threw = false;
+/******/ 		} finally {
+/******/ 			if(threw) delete __webpack_module_cache__[moduleId];
+/******/ 		}
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
 /******/ 	}
-/******/ 	// Create a new module (and put it into the cache)
-/******/ 	var module = __webpack_module_cache__[moduleId] = {
-/******/ 		// no module.id needed
-/******/ 		// no module.loaded needed
-/******/ 		exports: {}
-/******/ 	};
-/******/ 
-/******/ 	// Execute the module function
-/******/ 	var threw = true;
-/******/ 	try {
-/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nccwpck_require__);
-/******/ 		threw = false;
-/******/ 	} finally {
-/******/ 		if(threw) delete __webpack_module_cache__[moduleId];
-/******/ 	}
-/******/ 
-/******/ 	// Return the exports of the module
-/******/ 	return module.exports;
-/******/ }
-/******/ 
-/******/ // expose the modules object (__webpack_modules__)
-/******/ __nccwpck_require__.m = __webpack_modules__;
-/******/ 
+/******/ 	
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__nccwpck_require__.m = __webpack_modules__;
+/******/ 	
 /************************************************************************/
-/******/ /* webpack/runtime/define property getters */
-/******/ (() => {
-/******/ 	// define getter functions for harmony exports
-/******/ 	__nccwpck_require__.d = (exports, definition) => {
-/******/ 		for(var key in definition) {
-/******/ 			if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
-/******/ 				Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 			}
-/******/ 		}
-/******/ 	};
-/******/ })();
-/******/ 
-/******/ /* webpack/runtime/ensure chunk */
-/******/ (() => {
-/******/ 	__nccwpck_require__.f = {};
-/******/ 	// This file contains only the entry chunk.
-/******/ 	// The chunk loading function for additional chunks
-/******/ 	__nccwpck_require__.e = (chunkId) => {
-/******/ 		return Promise.all(Object.keys(__nccwpck_require__.f).reduce((promises, key) => {
-/******/ 			__nccwpck_require__.f[key](chunkId, promises);
-/******/ 			return promises;
-/******/ 		}, []));
-/******/ 	};
-/******/ })();
-/******/ 
-/******/ /* webpack/runtime/get javascript chunk filename */
-/******/ (() => {
-/******/ 	// This function allow to reference async chunks
-/******/ 	__nccwpck_require__.u = (chunkId) => {
-/******/ 		// return url for filenames based on template
-/******/ 		return "" + chunkId + ".index.js";
-/******/ 	};
-/******/ })();
-/******/ 
-/******/ /* webpack/runtime/hasOwnProperty shorthand */
-/******/ (() => {
-/******/ 	__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ })();
-/******/ 
-/******/ /* webpack/runtime/make namespace object */
-/******/ (() => {
-/******/ 	// define __esModule on exports
-/******/ 	__nccwpck_require__.r = (exports) => {
-/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 		}
-/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 	};
-/******/ })();
-/******/ 
-/******/ /* webpack/runtime/compat */
-/******/ 
-/******/ if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = new URL('.', import.meta.url).pathname.slice(import.meta.url.match(/^file:\/\/\/\w:/) ? 1 : 0, -1) + "/";
-/******/ 
-/******/ /* webpack/runtime/import chunk loading */
-/******/ (() => {
-/******/ 	// no baseURI
-/******/ 	
-/******/ 	// object to store loaded and loading chunks
-/******/ 	// undefined = chunk not loaded, null = chunk preloaded/prefetched
-/******/ 	// [resolve, Promise] = chunk loading, 0 = chunk loaded
-/******/ 	var installedChunks = {
-/******/ 		792: 0
-/******/ 	};
-/******/ 	
-/******/ 	var installChunk = (data) => {
-/******/ 		var {ids, modules, runtime} = data;
-/******/ 		// add "modules" to the modules object,
-/******/ 		// then flag all "ids" as loaded and fire callback
-/******/ 		var moduleId, chunkId, i = 0;
-/******/ 		for(moduleId in modules) {
-/******/ 			if(__nccwpck_require__.o(modules, moduleId)) {
-/******/ 				__nccwpck_require__.m[moduleId] = modules[moduleId];
-/******/ 			}
-/******/ 		}
-/******/ 		if(runtime) runtime(__nccwpck_require__);
-/******/ 		for(;i < ids.length; i++) {
-/******/ 			chunkId = ids[i];
-/******/ 			if(__nccwpck_require__.o(installedChunks, chunkId) && installedChunks[chunkId]) {
-/******/ 				installedChunks[chunkId][0]();
-/******/ 			}
-/******/ 			installedChunks[ids[i]] = 0;
-/******/ 		}
-/******/ 	
-/******/ 	}
-/******/ 	
-/******/ 	__nccwpck_require__.f.j = (chunkId, promises) => {
-/******/ 			// import() chunk loading for javascript
-/******/ 			var installedChunkData = __nccwpck_require__.o(installedChunks, chunkId) ? installedChunks[chunkId] : undefined;
-/******/ 			if(installedChunkData !== 0) { // 0 means "already installed".
-/******/ 	
-/******/ 				// a Promise means "currently loading".
-/******/ 				if(installedChunkData) {
-/******/ 					promises.push(installedChunkData[1]);
-/******/ 				} else {
-/******/ 					if(true) { // all chunks have JS
-/******/ 						// setup Promise in chunk cache
-/******/ 						var promise = import("./" + __nccwpck_require__.u(chunkId)).then(installChunk, (e) => {
-/******/ 							if(installedChunks[chunkId] !== 0) installedChunks[chunkId] = undefined;
-/******/ 							throw e;
-/******/ 						});
-/******/ 						var promise = Promise.race([promise, new Promise((resolve) => (installedChunkData = installedChunks[chunkId] = [resolve]))])
-/******/ 						promises.push(installedChunkData[1] = promise);
-/******/ 					}
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__nccwpck_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
 /******/ 				}
 /******/ 			}
-/******/ 	};
+/******/ 		};
+/******/ 	})();
 /******/ 	
-/******/ 	// no prefetching
+/******/ 	/* webpack/runtime/ensure chunk */
+/******/ 	(() => {
+/******/ 		__nccwpck_require__.f = {};
+/******/ 		// This file contains only the entry chunk.
+/******/ 		// The chunk loading function for additional chunks
+/******/ 		__nccwpck_require__.e = (chunkId) => {
+/******/ 			return Promise.all(Object.keys(__nccwpck_require__.f).reduce((promises, key) => {
+/******/ 				__nccwpck_require__.f[key](chunkId, promises);
+/******/ 				return promises;
+/******/ 			}, []));
+/******/ 		};
+/******/ 	})();
 /******/ 	
-/******/ 	// no preloaded
+/******/ 	/* webpack/runtime/get javascript chunk filename */
+/******/ 	(() => {
+/******/ 		// This function allow to reference async chunks
+/******/ 		__nccwpck_require__.u = (chunkId) => {
+/******/ 			// return url for filenames based on template
+/******/ 			return "" + chunkId + ".index.js";
+/******/ 		};
+/******/ 	})();
 /******/ 	
-/******/ 	// no external install chunk
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
 /******/ 	
-/******/ 	// no on chunks loaded
-/******/ })();
-/******/ 
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__nccwpck_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/compat */
+/******/ 	
+/******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
+/******/ 	
+/******/ 	/* webpack/runtime/require chunk loading */
+/******/ 	(() => {
+/******/ 		// no baseURI
+/******/ 		
+/******/ 		// object to store loaded chunks
+/******/ 		// "1" means "loaded", otherwise not loaded yet
+/******/ 		var installedChunks = {
+/******/ 			792: 1
+/******/ 		};
+/******/ 		
+/******/ 		// no on chunks loaded
+/******/ 		
+/******/ 		var installChunk = (chunk) => {
+/******/ 			var moreModules = chunk.modules, chunkIds = chunk.ids, runtime = chunk.runtime;
+/******/ 			for(var moduleId in moreModules) {
+/******/ 				if(__nccwpck_require__.o(moreModules, moduleId)) {
+/******/ 					__nccwpck_require__.m[moduleId] = moreModules[moduleId];
+/******/ 				}
+/******/ 			}
+/******/ 			if(runtime) runtime(__nccwpck_require__);
+/******/ 			for(var i = 0; i < chunkIds.length; i++)
+/******/ 				installedChunks[chunkIds[i]] = 1;
+/******/ 		
+/******/ 		};
+/******/ 		
+/******/ 		// require() chunk loading for javascript
+/******/ 		__nccwpck_require__.f.require = (chunkId, promises) => {
+/******/ 			// "1" is the signal for "already loaded"
+/******/ 			if(!installedChunks[chunkId]) {
+/******/ 				if(true) { // all chunks have JS
+/******/ 					installChunk(require("./" + __nccwpck_require__.u(chunkId)));
+/******/ 				} else installedChunks[chunkId] = 1;
+/******/ 			}
+/******/ 		};
+/******/ 		
+/******/ 		// no external install chunk
+/******/ 		
+/******/ 		// no HMR
+/******/ 		
+/******/ 		// no HMR manifest
+/******/ 	})();
+/******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
-
-// EXTERNAL MODULE: ./node_modules/.pnpm/@actions+core@1.11.1/node_modules/@actions/core/lib/core.js
-var core = __nccwpck_require__(9999);
-// EXTERNAL MODULE: external "crypto"
-var external_crypto_ = __nccwpck_require__(6982);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@actions+github@6.0.1/node_modules/@actions/github/lib/github.js
-var github = __nccwpck_require__(5380);
-// EXTERNAL MODULE: ./node_modules/.pnpm/action-input-parser@1.2.38/node_modules/action-input-parser/lib/index.js
-var lib = __nccwpck_require__(846);
-// EXTERNAL MODULE: ./node_modules/.pnpm/dotenv@17.2.1/node_modules/dotenv/config.js
-var config = __nccwpck_require__(6301);
-;// CONCATENATED MODULE: ./dist/config.js
-
-
-
-
-const IS_PR = ["pull_request", "pull_request_target"].includes(github.context.eventName);
-const context = {
-    GITHUB_TOKEN: lib.getInput(["GH_PAT", "GITHUB_TOKEN"], {
-        required: true,
-    }),
-    VERCEL_TOKEN: lib.getInput("VERCEL_TOKEN", { required: true }),
-    VERCEL_ORG_ID: lib.getInput("VERCEL_ORG_ID", { required: true }),
-    VERCEL_PROJECT_ID: lib.getInput("VERCEL_PROJECT_ID", {
-        required: true,
-    }),
-    PRODUCTION: lib.getInput("PRODUCTION", {
-        type: "boolean",
-        default: !IS_PR,
-    }),
-    GITHUB_DEPLOYMENT: lib.getInput("GITHUB_DEPLOYMENT", {
-        type: "boolean",
-        default: true,
-    }),
-    CREATE_COMMENT: lib.getInput("CREATE_COMMENT", {
-        type: "boolean",
-        default: true,
-    }),
-    DELETE_EXISTING_COMMENT: lib.getInput("DELETE_EXISTING_COMMENT", {
-        type: "boolean",
-        default: true,
-    }),
-    ATTACH_COMMIT_METADATA: lib.getInput("ATTACH_COMMIT_METADATA", {
-        type: "boolean",
-        default: true,
-    }),
-    DEPLOY_PR_FROM_FORK: lib.getInput("DEPLOY_PR_FROM_FORK", {
-        type: "boolean",
-        default: false,
-    }),
-    PR_LABELS: lib.getInput("PR_LABELS", {
-        default: ["deployed"],
-        type: "array",
-        disableable: true,
-    }),
-    ALIAS_DOMAINS: lib.getInput("ALIAS_DOMAINS", {
-        type: "array",
-        disableable: true,
-    }),
-    PR_PREVIEW_DOMAIN: lib.getInput("PR_PREVIEW_DOMAIN", {}),
-    VERCEL_SCOPE: lib.getInput("VERCEL_SCOPE", {}),
-    GITHUB_REPOSITORY: lib.getInput("GITHUB_REPOSITORY", {
-        required: true,
-    }),
-    GITHUB_DEPLOYMENT_ENV: lib.getInput("GITHUB_DEPLOYMENT_ENV", {}),
-    TRIM_COMMIT_MESSAGE: lib.getInput("TRIM_COMMIT_MESSAGE", {
-        type: "boolean",
-        default: false,
-    }),
-    WORKING_DIRECTORY: lib.getInput("WORKING_DIRECTORY", {}),
-    BUILD_ENV: lib.getInput("BUILD_ENV", { type: "array" }),
-    PREBUILT: lib.getInput("PREBUILT", {
-        type: "boolean",
-        default: false,
-    }),
-    RUNNING_LOCAL: process.env["RUNNING_LOCAL"] === "true",
-    FORCE: lib.getInput("FORCE", {
-        type: "boolean",
-        default: false,
-    }),
-    USER: "",
-    REPOSITORY: "",
-    SHA: "",
-    IS_PR: false,
-    REF: "",
-    BRANCH: "",
-    LOG_URL: "",
-    ACTOR: "",
-    IS_FORK: false,
-};
-const setDynamicVars = () => {
-    const [user, repo] = context.GITHUB_REPOSITORY.split("/");
-    context.USER = user || "";
-    context.REPOSITORY = repo || "";
-    // If running the action locally, use env vars instead of github.context
-    if (context.RUNNING_LOCAL) {
-        context.SHA = process.env["SHA"] || "XXXXXXX";
-        context.IS_PR = process.env["IS_PR"] === "true" || false;
-        const prNumber = process.env["PR_NUMBER"];
-        context.PR_NUMBER = prNumber ? parseInt(prNumber, 10) : undefined;
-        context.REF = process.env["REF"] || "refs/heads/master";
-        context.BRANCH = process.env["BRANCH"] || "master";
-        context.PRODUCTION = process.env["PRODUCTION"] === "true" || !context.IS_PR;
-        context.LOG_URL =
-            process.env["LOG_URL"] ||
-                `https://github.com/${context.USER}/${context.REPOSITORY}`;
-        context.ACTOR = process.env["ACTOR"] || context.USER;
-        context.IS_FORK = process.env["IS_FORK"] === "true" || false;
-        context.TRIM_COMMIT_MESSAGE =
-            process.env["TRIM_COMMIT_MESSAGE"] === "true" || false;
-        return;
-    }
-    context.IS_PR = IS_PR;
-    context.LOG_URL = `https://github.com/${context.USER}/${context.REPOSITORY}/actions/runs/${process.env["GITHUB_RUN_ID"]}`;
-    // Use different values depending on if the Action was triggered by a PR
-    if (context.IS_PR) {
-        context.PR_NUMBER = github.context.payload["number"];
-        context.ACTOR = github.context.payload.pull_request?.["user"].login || "";
-        context.REF = github.context.payload.pull_request?.["head"].ref || "";
-        context.SHA = github.context.payload.pull_request?.["head"].sha || "";
-        context.BRANCH = github.context.payload.pull_request?.["head"].ref || "";
-        context.IS_FORK =
-            github.context.payload.pull_request?.["head"].repo.full_name !==
-                context.GITHUB_REPOSITORY;
-    }
-    else {
-        context.ACTOR = github.context.actor;
-        context.REF = github.context.ref;
-        context.SHA = github.context.sha;
-        context.BRANCH = github.context.ref.substr(11);
-    }
-};
-setDynamicVars();
-core.setSecret(context.GITHUB_TOKEN);
-core.setSecret(context.VERCEL_TOKEN);
-core.debug(JSON.stringify(context, null, 2));
-/* harmony default export */ const dist_config = (context);
-//# sourceMappingURL=config.js.map
-;// CONCATENATED MODULE: ./dist/github.js
-
-
-const init = () => {
-    const client = github.getOctokit(dist_config.GITHUB_TOKEN, {
-        previews: ["flash", "ant-man"],
-    });
-    let deploymentId;
-    const createDeployment = async () => {
-        const deployment = await client["rest"].repos.createDeployment({
-            owner: dist_config.USER,
-            repo: dist_config.REPOSITORY,
-            ref: dist_config.REF,
-            required_contexts: [],
-            environment: dist_config.GITHUB_DEPLOYMENT_ENV ||
-                (dist_config.PRODUCTION ? "Production" : "Preview"),
-            description: "Deploy to Vercel",
-            auto_merge: false,
-        });
-        if ("message" in deployment.data) {
-            throw new Error(`GitHub API error: ${deployment.data.message}`);
-        }
-        const deploymentData = deployment.data;
-        deploymentId = deploymentData.id;
-        return deploymentData;
-    };
-    const updateDeployment = async (status, url) => {
-        if (!deploymentId) {
-            return;
-        }
-        const deploymentStatus = await client["rest"].repos.createDeploymentStatus({
-            owner: dist_config.USER,
-            repo: dist_config.REPOSITORY,
-            deployment_id: deploymentId,
-            state: status,
-            log_url: dist_config.LOG_URL,
-            environment_url: url || dist_config.LOG_URL,
-            description: "Starting deployment to Vercel",
-        });
-        return deploymentStatus.data;
-    };
-    const deleteExistingComment = async () => {
-        if (!dist_config.PR_NUMBER) {
-            throw new Error("PR_NUMBER is required for this operation");
-        }
-        const { data } = await client["rest"].issues.listComments({
-            owner: dist_config.USER,
-            repo: dist_config.REPOSITORY,
-            issue_number: dist_config.PR_NUMBER,
-        });
-        if (data.length < 1) {
-            return undefined;
-        }
-        const comment = data.find((comment) => comment.body?.includes("This pull request has been deployed to Vercel."));
-        if (comment) {
-            await client["rest"].issues.deleteComment({
-                owner: dist_config.USER,
-                repo: dist_config.REPOSITORY,
-                comment_id: comment.id,
-            });
-            return comment.id;
-        }
-        return undefined;
-    };
-    const createComment = async (body) => {
-        // Remove indentation
-        const dedented = body.replace(/^[^\S\n]+/gm, "");
-        if (!dist_config.PR_NUMBER) {
-            throw new Error("PR_NUMBER is required for this operation");
-        }
-        const comment = await client["rest"].issues.createComment({
-            owner: dist_config.USER,
-            repo: dist_config.REPOSITORY,
-            issue_number: dist_config.PR_NUMBER,
-            body: dedented,
-        });
-        return comment.data;
-    };
-    const addLabel = async () => {
-        if (!dist_config.PR_NUMBER) {
-            throw new Error("PR_NUMBER is required for this operation");
-        }
-        const label = await client["rest"].issues.addLabels({
-            owner: dist_config.USER,
-            repo: dist_config.REPOSITORY,
-            issue_number: dist_config.PR_NUMBER,
-            labels: dist_config.PR_LABELS,
-        });
-        return label.data;
-    };
-    const getCommit = async () => {
-        const { data } = await client["rest"].repos.getCommit({
-            owner: dist_config.USER,
-            repo: dist_config.REPOSITORY,
-            ref: dist_config.REF,
-        });
-        return {
-            authorName: data.commit.author?.name || "",
-            authorLogin: data.author?.login || "",
-            commitMessage: data.commit.message,
-        };
-    };
-    return {
-        client,
-        createDeployment,
-        updateDeployment,
-        deleteExistingComment,
-        createComment,
-        addLabel,
-        getCommit,
-    };
-};
-
-//# sourceMappingURL=github.js.map
-// EXTERNAL MODULE: external "child_process"
-var external_child_process_ = __nccwpck_require__(5317);
-;// CONCATENATED MODULE: ./dist/helpers.js
-
-
-const execCmd = (command, args, cwd) => {
-    core.debug(`EXEC: "${command} ${args}" in ${cwd || "."}`);
-    return new Promise((resolve, reject) => {
-        const process = (0,external_child_process_.spawn)(command, args, { cwd });
-        let stdout = "";
-        let stderr = "";
-        process.stdout.on("data", (data) => {
-            core.debug(data.toString());
-            if (data !== undefined && data.length > 0) {
-                stdout += data;
-            }
-        });
-        process.stderr.on("data", (data) => {
-            core.debug(data.toString());
-            if (data !== undefined && data.length > 0) {
-                stderr += data;
-            }
-        });
-        process.on("close", (code) => {
-            if (code !== 0) {
-                reject(new Error(stderr));
-            }
-            else {
-                resolve(stdout.trim());
-            }
-        });
-    });
-};
-const addSchema = (url) => {
-    const regex = /^https?:\/\//;
-    if (!regex.test(url)) {
-        return `https://${url}`;
-    }
-    return url;
-};
-const removeSchema = (url) => {
-    const regex = /^https?:\/\//;
-    return url.replace(regex, "");
-};
-
-//# sourceMappingURL=helpers.js.map
-;// CONCATENATED MODULE: ./dist/vercel.js
-
-
-
-const vercel_init = () => {
-    core.info("Setting environment variables for Vercel CLI");
-    core.exportVariable("VERCEL_ORG_ID", dist_config.VERCEL_ORG_ID);
-    core.exportVariable("VERCEL_PROJECT_ID", dist_config.VERCEL_PROJECT_ID);
-    let deploymentUrl = "";
-    const deploy = async (commit) => {
-        let commandArguments = [`--token=${dist_config.VERCEL_TOKEN}`];
-        if (dist_config.VERCEL_SCOPE) {
-            commandArguments.push(`--scope=${dist_config.VERCEL_SCOPE}`);
-        }
-        if (dist_config.PRODUCTION) {
-            commandArguments.push("--prod");
-        }
-        if (dist_config.PREBUILT) {
-            commandArguments.push("--prebuilt");
-        }
-        if (dist_config.FORCE) {
-            commandArguments.push("--force");
-        }
-        if (commit) {
-            const metadata = [
-                `githubCommitAuthorName=${commit.authorName}`,
-                `githubCommitAuthorLogin=${commit.authorLogin}`,
-                `githubCommitMessage=${dist_config.TRIM_COMMIT_MESSAGE
-                    ? commit.commitMessage.split(/\r?\n/)[0]
-                    : commit.commitMessage}`,
-                `githubCommitOrg=${dist_config.USER}`,
-                `githubCommitRepo=${dist_config.REPOSITORY}`,
-                `githubCommitRef=${dist_config.REF}`,
-                `githubCommitSha=${dist_config.SHA}`,
-                `githubOrg=${dist_config.USER}`,
-                `githubRepo=${dist_config.REPOSITORY}`,
-                "githubDeployment=1",
-            ];
-            metadata.forEach((item) => {
-                commandArguments = commandArguments.concat(["--meta", item]);
-            });
-        }
-        if (dist_config.BUILD_ENV) {
-            dist_config.BUILD_ENV.forEach((item) => {
-                commandArguments = commandArguments.concat(["--build-env", item]);
-            });
-        }
-        core.info("Starting deploy with Vercel CLI");
-        const output = await execCmd("vercel", commandArguments, dist_config.WORKING_DIRECTORY);
-        const parsed = output.match(/(?<=https?:\/\/)(.*)/g)?.[0];
-        if (!parsed) {
-            throw new Error("Could not parse deploymentUrl");
-        }
-        deploymentUrl = parsed;
-        return deploymentUrl;
-    };
-    const assignAlias = async (aliasUrl) => {
-        const commandArguments = [
-            `--token=${dist_config.VERCEL_TOKEN}`,
-            "alias",
-            "set",
-            deploymentUrl,
-            removeSchema(aliasUrl),
-        ];
-        if (dist_config.VERCEL_SCOPE) {
-            commandArguments.push(`--scope=${dist_config.VERCEL_SCOPE}`);
-        }
-        const output = await execCmd("vercel", commandArguments, dist_config.WORKING_DIRECTORY);
-        return output;
-    };
-    const getDeployment = async () => {
-        const url = `https://api.vercel.com/v13/deployments/${deploymentUrl}`;
-        const options = {
-            headers: {
-                Authorization: `Bearer ${dist_config.VERCEL_TOKEN}`,
-            },
-        };
-        const got = (await __nccwpck_require__.e(/* import() */ 398).then(__nccwpck_require__.bind(__nccwpck_require__, 4398))).default;
-        const res = (await got(url, options).json());
-        return res;
-    };
-    return {
-        deploy,
-        assignAlias,
-        deploymentUrl,
-        getDeployment,
-    };
-};
-
-//# sourceMappingURL=vercel.js.map
-;// CONCATENATED MODULE: ./dist/index.js
-
-
-
-
-
-
-const urlSafeParameter = (input) => input.replace(/[^a-z0-9_~]/gi, "-");
-const run = async () => {
-    const github = init();
-    // Refuse to deploy an untrusted fork
-    if (dist_config.IS_FORK === true && dist_config.DEPLOY_PR_FROM_FORK === false) {
-        core.warning("PR is from fork and DEPLOY_PR_FROM_FORK is set to false");
-        const body = `
-			Refusing to deploy this Pull Request to Vercel because it originates from @${dist_config.ACTOR}'s fork.
-
-			**@${dist_config.USER}** To allow this behaviour set \`DEPLOY_PR_FROM_FORK\` to true ([more info](https://github.com/BetaHuhn/deploy-to-vercel-action#deploying-a-pr-made-from-a-fork-or-dependabot)).
-		`;
-        const comment = await github.createComment(body);
-        core.info(`Comment created: ${comment.html_url}`);
-        core.setOutput("DEPLOYMENT_CREATED", false);
-        core.setOutput("COMMENT_CREATED", true);
-        core.info("Done");
-        return;
-    }
-    if (dist_config.GITHUB_DEPLOYMENT) {
-        core.info("Creating GitHub deployment");
-        const ghDeployment = await github.createDeployment();
-        core.info(`Deployment #${ghDeployment.id} created`);
-        await github.updateDeployment("pending");
-        core.info(`Deployment #${ghDeployment.id} status changed to "pending"`);
-    }
-    try {
-        core.info("Creating deployment with Vercel CLI");
-        const vercel = vercel_init();
-        const commit = dist_config.ATTACH_COMMIT_METADATA
-            ? await github.getCommit()
-            : undefined;
-        const deploymentUrl = await vercel.deploy(commit);
-        core.info("Successfully deployed to Vercel!");
-        const deploymentUrls = [];
-        if (dist_config.IS_PR && dist_config.PR_PREVIEW_DOMAIN) {
-            core.info("Assigning custom preview domain to PR");
-            if (typeof dist_config.PR_PREVIEW_DOMAIN !== "string") {
-                throw new Error("invalid type for PR_PREVIEW_DOMAIN");
-            }
-            const alias = dist_config.PR_PREVIEW_DOMAIN.replace("{USER}", urlSafeParameter(dist_config.USER))
-                .replace("{REPO}", urlSafeParameter(dist_config.REPOSITORY))
-                .replace("{BRANCH}", urlSafeParameter(dist_config.BRANCH))
-                .replace("{PR}", dist_config.PR_NUMBER?.toString() || "")
-                .replace("{SHA}", dist_config.SHA.substring(0, 7))
-                .toLowerCase();
-            const previewDomainSuffix = ".vercel.app";
-            let nextAlias = alias;
-            if (alias.endsWith(previewDomainSuffix)) {
-                let prefix = alias.substring(0, alias.indexOf(previewDomainSuffix));
-                if (prefix.length >= 60) {
-                    core.warning(`The alias ${prefix} exceeds 60 chars in length, truncating using vercel's rules. See https://vercel.com/docs/concepts/deployments/automatic-urls#automatic-branch-urls`);
-                    prefix = prefix.substring(0, 55);
-                    const uniqueSuffix = (0,external_crypto_.createHash)("sha256")
-                        .update(`git-${dist_config.BRANCH}-${dist_config.REPOSITORY}`)
-                        .digest("hex")
-                        .slice(0, 6);
-                    nextAlias = `${prefix}-${uniqueSuffix}${previewDomainSuffix}`;
-                    core.info(`Updated domain alias: ${nextAlias}`);
-                }
-            }
-            await vercel.assignAlias(nextAlias);
-            deploymentUrls.push(addSchema(nextAlias));
-        }
-        if (!dist_config.IS_PR && dist_config.ALIAS_DOMAINS) {
-            core.info("Assigning custom domains to Vercel deployment");
-            if (!Array.isArray(dist_config.ALIAS_DOMAINS)) {
-                throw new Error("invalid type for PR_PREVIEW_DOMAIN");
-            }
-            for (let i = 0; i < dist_config.ALIAS_DOMAINS.length; i++) {
-                const alias = dist_config.ALIAS_DOMAINS[i];
-                if (!alias) {
-                    continue;
-                }
-                const processedAlias = alias
-                    .replace("{USER}", urlSafeParameter(dist_config.USER))
-                    .replace("{REPO}", urlSafeParameter(dist_config.REPOSITORY))
-                    .replace("{BRANCH}", urlSafeParameter(dist_config.BRANCH))
-                    .replace("{SHA}", dist_config.SHA.substring(0, 7))
-                    .toLowerCase();
-                await vercel.assignAlias(processedAlias);
-                deploymentUrls.push(addSchema(processedAlias));
-            }
-        }
-        deploymentUrls.push(addSchema(deploymentUrl));
-        const previewUrl = deploymentUrls[0];
-        const deployment = await vercel.getDeployment();
-        core.info(`Deployment "${deployment.id}" available at: ${deploymentUrls.join(", ")}`);
-        if (dist_config.GITHUB_DEPLOYMENT) {
-            core.info('Changing GitHub deployment status to "success"');
-            await github.updateDeployment("success", previewUrl);
-        }
-        if (dist_config.IS_PR) {
-            if (dist_config.DELETE_EXISTING_COMMENT) {
-                core.info("Checking for existing comment on PR");
-                const deletedCommentId = await github.deleteExistingComment();
-                if (deletedCommentId) {
-                    core.info(`Deleted existing comment #${deletedCommentId}`);
-                }
-            }
-            if (dist_config.CREATE_COMMENT) {
-                core.info("Creating new comment on PR");
-                const body = `
-					This pull request has been deployed to Vercel.
-
-					<table>
-						<tr>
-							<td><strong>Latest commit:</strong></td>
-							<td><code>${dist_config.SHA.substring(0, 7)}</code></td>
-						</tr>
-						<tr>
-							<td><strong>✅ Preview:</strong></td>
-							<td><a href='${previewUrl}'>${previewUrl}</a></td>
-						</tr>
-						<tr>
-							<td><strong>🔍 Inspect:</strong></td>
-							<td><a href='${deployment.inspectorUrl}'>${deployment.inspectorUrl}</a></td>
-						</tr>
-					</table>
-
-					[View Workflow Logs](${dist_config.LOG_URL})
-				`;
-                const comment = await github.createComment(body);
-                core.info(`Comment created: ${comment.html_url}`);
-            }
-            if (dist_config.PR_LABELS) {
-                core.info("Adding label(s) to PR");
-                const labels = await github.addLabel();
-                core.info(`Label(s) "${labels.map((label) => label.name).join(", ")}" added`);
-            }
-        }
-        core.setOutput("PREVIEW_URL", previewUrl);
-        core.setOutput("DEPLOYMENT_URLS", deploymentUrls);
-        core.setOutput("DEPLOYMENT_UNIQUE_URL", deploymentUrls[deploymentUrls.length - 1]);
-        core.setOutput("DEPLOYMENT_ID", deployment.id);
-        core.setOutput("DEPLOYMENT_INSPECTOR_URL", deployment.inspectorUrl);
-        core.setOutput("DEPLOYMENT_CREATED", true);
-        core.setOutput("COMMENT_CREATED", dist_config.IS_PR && dist_config.CREATE_COMMENT);
-        core.info("Done");
-    }
-    catch (err) {
-        await github.updateDeployment("failure");
-        core.setFailed(err instanceof Error ? err.message : String(err));
-    }
-};
-run()
-    .then(() => { })
-    .catch((err) => {
-    core.error("ERROR");
-    core.setFailed(err instanceof Error ? err.message : String(err));
-});
-//# sourceMappingURL=index.js.map
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __nccwpck_require__(9939);
+/******/ 	module.exports = __webpack_exports__;
+/******/ 	
+/******/ })()
+;
