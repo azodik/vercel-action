@@ -1,0 +1,49 @@
+{
+  "name": "vercel-action",
+  "version": "1.10.0",
+  "type": "module",
+  "description": "Deploy your project to Vercel using GitHub Actions.",
+  "main": "dist/index.js",
+  "scripts": {
+    "lint": "eslint ./src --ext .ts",
+    "lint:fix": "eslint ./src --ext .ts --fix",
+    "dev": "ts-node src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc && ncc build dist/index.js -o dist",
+    "type-check": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/azodik/vercel-action.git"
+  },
+  "keywords": [],
+  "author": "Jai Sharma <jai@azodik.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/azodik/vercel-action/issues"
+  },
+  "homepage": "https://github.com/azodik/vercel-action",
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/exec": "^1.1.1",
+    "@actions/github": "^6.0.1",
+    "action-input-parser": "^1.2.38",
+    "dotenv": "^17.2.1",
+    "got": "^14.4.7",
+    "vercel": "^46.0.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "@types/node": "^24.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.39.1",
+    "@typescript-eslint/parser": "^8.39.1",
+    "@vercel/ncc": "^0.38.3",
+    "eslint": "^9.33.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.14.0"
+}
