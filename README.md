@@ -52,6 +52,7 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRODUCTION: ${{ github.ref == 'refs/heads/main' }}
+          STAGING:${{ github.ref == 'refs/heads/staging' }}
           GITHUB_DEPLOYMENT: true
           CREATE_COMMENT: true
           DELETE_EXISTING_COMMENT: true
