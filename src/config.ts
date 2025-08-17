@@ -52,6 +52,7 @@ const createConfig = (): Config => {
 
     // Deployment settings
     PRODUCTION: getBooleanInput("PRODUCTION", !isPr),
+    STAGING: getBooleanInput("STAGING", false),
     PREBUILT: getBooleanInput("PREBUILT", false),
     FORCE: getBooleanInput("FORCE", false),
 
