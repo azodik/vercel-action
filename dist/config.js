@@ -1,106 +1,68 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const core = __importStar(require("@actions/core"));
-const github = __importStar(require("@actions/github"));
-const action_input_parser_1 = __importDefault(require("action-input-parser"));
-require("dotenv/config");
+import * as core from "@actions/core";
+import * as github from "@actions/github";
+import parser from "action-input-parser";
+import "dotenv/config";
 const IS_PR = ["pull_request", "pull_request_target"].includes(github.context.eventName);
 const context = {
-    GITHUB_TOKEN: action_input_parser_1.default.getInput(["GH_PAT", "GITHUB_TOKEN"], {
+    GITHUB_TOKEN: parser.getInput(["GH_PAT", "GITHUB_TOKEN"], {
         required: true,
     }),
-    VERCEL_TOKEN: action_input_parser_1.default.getInput("VERCEL_TOKEN", { required: true }),
-    VERCEL_ORG_ID: action_input_parser_1.default.getInput("VERCEL_ORG_ID", { required: true }),
-    VERCEL_PROJECT_ID: action_input_parser_1.default.getInput("VERCEL_PROJECT_ID", {
+    VERCEL_TOKEN: parser.getInput("VERCEL_TOKEN", { required: true }),
+    VERCEL_ORG_ID: parser.getInput("VERCEL_ORG_ID", { required: true }),
+    VERCEL_PROJECT_ID: parser.getInput("VERCEL_PROJECT_ID", {
         required: true,
     }),
-    PRODUCTION: action_input_parser_1.default.getInput("PRODUCTION", {
+    PRODUCTION: parser.getInput("PRODUCTION", {
         type: "boolean",
         default: !IS_PR,
     }),
-    GITHUB_DEPLOYMENT: action_input_parser_1.default.getInput("GITHUB_DEPLOYMENT", {
+    GITHUB_DEPLOYMENT: parser.getInput("GITHUB_DEPLOYMENT", {
         type: "boolean",
         default: true,
     }),
-    CREATE_COMMENT: action_input_parser_1.default.getInput("CREATE_COMMENT", {
+    CREATE_COMMENT: parser.getInput("CREATE_COMMENT", {
         type: "boolean",
         default: true,
     }),
-    DELETE_EXISTING_COMMENT: action_input_parser_1.default.getInput("DELETE_EXISTING_COMMENT", {
+    DELETE_EXISTING_COMMENT: parser.getInput("DELETE_EXISTING_COMMENT", {
         type: "boolean",
         default: true,
     }),
-    ATTACH_COMMIT_METADATA: action_input_parser_1.default.getInput("ATTACH_COMMIT_METADATA", {
+    ATTACH_COMMIT_METADATA: parser.getInput("ATTACH_COMMIT_METADATA", {
         type: "boolean",
         default: true,
     }),
-    DEPLOY_PR_FROM_FORK: action_input_parser_1.default.getInput("DEPLOY_PR_FROM_FORK", {
+    DEPLOY_PR_FROM_FORK: parser.getInput("DEPLOY_PR_FROM_FORK", {
         type: "boolean",
         default: false,
     }),
-    PR_LABELS: action_input_parser_1.default.getInput("PR_LABELS", {
+    PR_LABELS: parser.getInput("PR_LABELS", {
         default: ["deployed"],
         type: "array",
         disableable: true,
     }),
-    ALIAS_DOMAINS: action_input_parser_1.default.getInput("ALIAS_DOMAINS", {
+    ALIAS_DOMAINS: parser.getInput("ALIAS_DOMAINS", {
         type: "array",
         disableable: true,
     }),
-    PR_PREVIEW_DOMAIN: action_input_parser_1.default.getInput("PR_PREVIEW_DOMAIN", {}),
-    VERCEL_SCOPE: action_input_parser_1.default.getInput("VERCEL_SCOPE", {}),
-    GITHUB_REPOSITORY: action_input_parser_1.default.getInput("GITHUB_REPOSITORY", {
+    PR_PREVIEW_DOMAIN: parser.getInput("PR_PREVIEW_DOMAIN", {}),
+    VERCEL_SCOPE: parser.getInput("VERCEL_SCOPE", {}),
+    GITHUB_REPOSITORY: parser.getInput("GITHUB_REPOSITORY", {
         required: true,
     }),
-    GITHUB_DEPLOYMENT_ENV: action_input_parser_1.default.getInput("GITHUB_DEPLOYMENT_ENV", {}),
-    TRIM_COMMIT_MESSAGE: action_input_parser_1.default.getInput("TRIM_COMMIT_MESSAGE", {
+    GITHUB_DEPLOYMENT_ENV: parser.getInput("GITHUB_DEPLOYMENT_ENV", {}),
+    TRIM_COMMIT_MESSAGE: parser.getInput("TRIM_COMMIT_MESSAGE", {
         type: "boolean",
         default: false,
     }),
-    WORKING_DIRECTORY: action_input_parser_1.default.getInput("WORKING_DIRECTORY", {}),
-    BUILD_ENV: action_input_parser_1.default.getInput("BUILD_ENV", { type: "array" }),
-    PREBUILT: action_input_parser_1.default.getInput("PREBUILT", {
+    WORKING_DIRECTORY: parser.getInput("WORKING_DIRECTORY", {}),
+    BUILD_ENV: parser.getInput("BUILD_ENV", { type: "array" }),
+    PREBUILT: parser.getInput("PREBUILT", {
         type: "boolean",
         default: false,
     }),
     RUNNING_LOCAL: process.env["RUNNING_LOCAL"] === "true",
-    FORCE: action_input_parser_1.default.getInput("FORCE", {
+    FORCE: parser.getInput("FORCE", {
         type: "boolean",
         default: false,
     }),
@@ -160,5 +122,5 @@ setDynamicVars();
 core.setSecret(context.GITHUB_TOKEN);
 core.setSecret(context.VERCEL_TOKEN);
 core.debug(JSON.stringify(context, null, 2));
-exports.default = context;
+export default context;
 //# sourceMappingURL=config.js.map

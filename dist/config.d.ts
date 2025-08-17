@@ -1,4 +1,4 @@
-import { Config } from "./types";
+import { Config } from "./types.js";
 import "dotenv/config";
 declare const context: Config;
 export default context;

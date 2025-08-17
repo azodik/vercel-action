@@ -1,0 +1,22 @@
+FROM node:20-alpine
+
+WORKDIR /action
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies
+RUN npm install -g pnpm
+RUN pnpm install
+
+# Copy source code
+COPY . .
+
+# Build the action
+RUN pnpm run build
+
+# Create a simple test script
+RUN echo '#!/bin/sh\nnode dist/index.js' > /action/entrypoint.sh
+RUN chmod +x /action/entrypoint.sh
+
+ENTRYPOINT ["/action/entrypoint.sh"]
