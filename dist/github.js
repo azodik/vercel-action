@@ -38,20 +38,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.init = void 0;
 const github = __importStar(require("@actions/github"));
-const config_js_1 = __importDefault(require("./config.js"));
+const config_1 = __importDefault(require("./config"));
 const init = () => {
-    const client = github.getOctokit(config_js_1.default.GITHUB_TOKEN, {
+    const client = github.getOctokit(config_1.default.GITHUB_TOKEN, {
         previews: ["flash", "ant-man"],
     });
     let deploymentId;
     const createDeployment = async () => {
         const deployment = await client["rest"].repos.createDeployment({
-            owner: config_js_1.default.USER,
-            repo: config_js_1.default.REPOSITORY,
-            ref: config_js_1.default.REF,
+            owner: config_1.default.USER,
+            repo: config_1.default.REPOSITORY,
+            ref: config_1.default.REF,
             required_contexts: [],
-            environment: config_js_1.default.GITHUB_DEPLOYMENT_ENV ||
-                (config_js_1.default.PRODUCTION ? "Production" : "Preview"),
+            environment: config_1.default.GITHUB_DEPLOYMENT_ENV ||
+                (config_1.default.PRODUCTION ? "Production" : "Preview"),
             description: "Deploy to Vercel",
             auto_merge: false,
         });
@@ -67,24 +67,24 @@ const init = () => {
             return;
         }
         const deploymentStatus = await client["rest"].repos.createDeploymentStatus({
-            owner: config_js_1.default.USER,
-            repo: config_js_1.default.REPOSITORY,
+            owner: config_1.default.USER,
+            repo: config_1.default.REPOSITORY,
             deployment_id: deploymentId,
             state: status,
-            log_url: config_js_1.default.LOG_URL,
-            environment_url: url || config_js_1.default.LOG_URL,
+            log_url: config_1.default.LOG_URL,
+            environment_url: url || config_1.default.LOG_URL,
             description: "Starting deployment to Vercel",
         });
         return deploymentStatus.data;
     };
     const deleteExistingComment = async () => {
-        if (!config_js_1.default.PR_NUMBER) {
+        if (!config_1.default.PR_NUMBER) {
             throw new Error("PR_NUMBER is required for this operation");
         }
         const { data } = await client["rest"].issues.listComments({
-            owner: config_js_1.default.USER,
-            repo: config_js_1.default.REPOSITORY,
-            issue_number: config_js_1.default.PR_NUMBER,
+            owner: config_1.default.USER,
+            repo: config_1.default.REPOSITORY,
+            issue_number: config_1.default.PR_NUMBER,
         });
         if (data.length < 1) {
             return undefined;
@@ -92,8 +92,8 @@ const init = () => {
         const comment = data.find((comment) => comment.body?.includes("This pull request has been deployed to Vercel."));
         if (comment) {
             await client["rest"].issues.deleteComment({
-                owner: config_js_1.default.USER,
-                repo: config_js_1.default.REPOSITORY,
+                owner: config_1.default.USER,
+                repo: config_1.default.REPOSITORY,
                 comment_id: comment.id,
             });
             return comment.id;
@@ -103,34 +103,34 @@ const init = () => {
     const createComment = async (body) => {
         // Remove indentation
         const dedented = body.replace(/^[^\S\n]+/gm, "");
-        if (!config_js_1.default.PR_NUMBER) {
+        if (!config_1.default.PR_NUMBER) {
             throw new Error("PR_NUMBER is required for this operation");
         }
         const comment = await client["rest"].issues.createComment({
-            owner: config_js_1.default.USER,
-            repo: config_js_1.default.REPOSITORY,
-            issue_number: config_js_1.default.PR_NUMBER,
+            owner: config_1.default.USER,
+            repo: config_1.default.REPOSITORY,
+            issue_number: config_1.default.PR_NUMBER,
             body: dedented,
         });
         return comment.data;
     };
     const addLabel = async () => {
-        if (!config_js_1.default.PR_NUMBER) {
+        if (!config_1.default.PR_NUMBER) {
             throw new Error("PR_NUMBER is required for this operation");
         }
         const label = await client["rest"].issues.addLabels({
-            owner: config_js_1.default.USER,
-            repo: config_js_1.default.REPOSITORY,
-            issue_number: config_js_1.default.PR_NUMBER,
-            labels: config_js_1.default.PR_LABELS,
+            owner: config_1.default.USER,
+            repo: config_1.default.REPOSITORY,
+            issue_number: config_1.default.PR_NUMBER,
+            labels: config_1.default.PR_LABELS,
         });
         return label.data;
     };
     const getCommit = async () => {
         const { data } = await client["rest"].repos.getCommit({
-            owner: config_js_1.default.USER,
-            repo: config_js_1.default.REPOSITORY,
-            ref: config_js_1.default.REF,
+            owner: config_1.default.USER,
+            repo: config_1.default.REPOSITORY,
+            ref: config_1.default.REF,
         });
         return {
             authorName: data.commit.author?.name || "",

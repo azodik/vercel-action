@@ -6,8 +6,8 @@ import {
   GitHubComment,
   GitHubLabel,
   Commit,
-} from "./types.js";
-import context from "./config.js";
+} from "./types";
+import context from "./config";
 
 const init = (): GitHubClient => {
   const client = github.getOctokit(context.GITHUB_TOKEN, {
@@ -41,7 +41,7 @@ const init = (): GitHubClient => {
 
   const updateDeployment = async (
     status: string,
-    url?: string,
+    url?: string
   ): Promise<GitHubDeploymentStatus | undefined> => {
     if (!deploymentId) {
       return;
@@ -82,7 +82,7 @@ const init = (): GitHubClient => {
     }
 
     const comment = data.find((comment: any) =>
-      comment.body?.includes("This pull request has been deployed to Vercel."),
+      comment.body?.includes("This pull request has been deployed to Vercel.")
     );
     if (comment) {
       await client["rest"].issues.deleteComment({

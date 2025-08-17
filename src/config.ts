@@ -1,11 +1,11 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
-import parser from "action-input-parser";
-import { Config } from "./types.js";
+import * as parser from "action-input-parser";
+import { Config } from "./types";
 import "dotenv/config";
 
 const IS_PR = ["pull_request", "pull_request_target"].includes(
-  github.context.eventName,
+  github.context.eventName
 );
 
 const context: Config = {

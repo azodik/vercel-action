@@ -39,75 +39,72 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(9999));
 const github = __importStar(__nccwpck_require__(5380));
-const action_input_parser_1 = __importDefault(__nccwpck_require__(846));
+const parser = __importStar(__nccwpck_require__(846));
 __nccwpck_require__(6301);
 const IS_PR = ["pull_request", "pull_request_target"].includes(github.context.eventName);
 const context = {
-    GITHUB_TOKEN: action_input_parser_1.default.getInput(["GH_PAT", "GITHUB_TOKEN"], {
+    GITHUB_TOKEN: parser.getInput(["GH_PAT", "GITHUB_TOKEN"], {
         required: true,
     }),
-    VERCEL_TOKEN: action_input_parser_1.default.getInput("VERCEL_TOKEN", { required: true }),
-    VERCEL_ORG_ID: action_input_parser_1.default.getInput("VERCEL_ORG_ID", { required: true }),
-    VERCEL_PROJECT_ID: action_input_parser_1.default.getInput("VERCEL_PROJECT_ID", {
+    VERCEL_TOKEN: parser.getInput("VERCEL_TOKEN", { required: true }),
+    VERCEL_ORG_ID: parser.getInput("VERCEL_ORG_ID", { required: true }),
+    VERCEL_PROJECT_ID: parser.getInput("VERCEL_PROJECT_ID", {
         required: true,
     }),
-    PRODUCTION: action_input_parser_1.default.getInput("PRODUCTION", {
+    PRODUCTION: parser.getInput("PRODUCTION", {
         type: "boolean",
         default: !IS_PR,
     }),
-    GITHUB_DEPLOYMENT: action_input_parser_1.default.getInput("GITHUB_DEPLOYMENT", {
+    GITHUB_DEPLOYMENT: parser.getInput("GITHUB_DEPLOYMENT", {
         type: "boolean",
         default: true,
     }),
-    CREATE_COMMENT: action_input_parser_1.default.getInput("CREATE_COMMENT", {
+    CREATE_COMMENT: parser.getInput("CREATE_COMMENT", {
         type: "boolean",
         default: true,
     }),
-    DELETE_EXISTING_COMMENT: action_input_parser_1.default.getInput("DELETE_EXISTING_COMMENT", {
+    DELETE_EXISTING_COMMENT: parser.getInput("DELETE_EXISTING_COMMENT", {
         type: "boolean",
         default: true,
     }),
-    ATTACH_COMMIT_METADATA: action_input_parser_1.default.getInput("ATTACH_COMMIT_METADATA", {
+    ATTACH_COMMIT_METADATA: parser.getInput("ATTACH_COMMIT_METADATA", {
         type: "boolean",
         default: true,
     }),
-    DEPLOY_PR_FROM_FORK: action_input_parser_1.default.getInput("DEPLOY_PR_FROM_FORK", {
+    DEPLOY_PR_FROM_FORK: parser.getInput("DEPLOY_PR_FROM_FORK", {
         type: "boolean",
         default: false,
     }),
-    PR_LABELS: action_input_parser_1.default.getInput("PR_LABELS", {
+    PR_LABELS: parser.getInput("PR_LABELS", {
         default: ["deployed"],
         type: "array",
         disableable: true,
     }),
-    ALIAS_DOMAINS: action_input_parser_1.default.getInput("ALIAS_DOMAINS", {
+    ALIAS_DOMAINS: parser.getInput("ALIAS_DOMAINS", {
         type: "array",
         disableable: true,
     }),
-    PR_PREVIEW_DOMAIN: action_input_parser_1.default.getInput("PR_PREVIEW_DOMAIN", {}),
-    VERCEL_SCOPE: action_input_parser_1.default.getInput("VERCEL_SCOPE", {}),
-    GITHUB_REPOSITORY: action_input_parser_1.default.getInput("GITHUB_REPOSITORY", {
+    PR_PREVIEW_DOMAIN: parser.getInput("PR_PREVIEW_DOMAIN", {}),
+    VERCEL_SCOPE: parser.getInput("VERCEL_SCOPE", {}),
+    GITHUB_REPOSITORY: parser.getInput("GITHUB_REPOSITORY", {
         required: true,
     }),
-    GITHUB_DEPLOYMENT_ENV: action_input_parser_1.default.getInput("GITHUB_DEPLOYMENT_ENV", {}),
-    TRIM_COMMIT_MESSAGE: action_input_parser_1.default.getInput("TRIM_COMMIT_MESSAGE", {
+    GITHUB_DEPLOYMENT_ENV: parser.getInput("GITHUB_DEPLOYMENT_ENV", {}),
+    TRIM_COMMIT_MESSAGE: parser.getInput("TRIM_COMMIT_MESSAGE", {
         type: "boolean",
         default: false,
     }),
-    WORKING_DIRECTORY: action_input_parser_1.default.getInput("WORKING_DIRECTORY", {}),
-    BUILD_ENV: action_input_parser_1.default.getInput("BUILD_ENV", { type: "array" }),
-    PREBUILT: action_input_parser_1.default.getInput("PREBUILT", {
+    WORKING_DIRECTORY: parser.getInput("WORKING_DIRECTORY", {}),
+    BUILD_ENV: parser.getInput("BUILD_ENV", { type: "array" }),
+    PREBUILT: parser.getInput("PREBUILT", {
         type: "boolean",
         default: false,
     }),
     RUNNING_LOCAL: process.env["RUNNING_LOCAL"] === "true",
-    FORCE: action_input_parser_1.default.getInput("FORCE", {
+    FORCE: parser.getInput("FORCE", {
         type: "boolean",
         default: false,
     }),
@@ -216,20 +213,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.init = void 0;
 const github = __importStar(__nccwpck_require__(5380));
-const config_js_1 = __importDefault(__nccwpck_require__(1945));
+const config_1 = __importDefault(__nccwpck_require__(1945));
 const init = () => {
-    const client = github.getOctokit(config_js_1.default.GITHUB_TOKEN, {
+    const client = github.getOctokit(config_1.default.GITHUB_TOKEN, {
         previews: ["flash", "ant-man"],
     });
     let deploymentId;
     const createDeployment = async () => {
         const deployment = await client["rest"].repos.createDeployment({
-            owner: config_js_1.default.USER,
-            repo: config_js_1.default.REPOSITORY,
-            ref: config_js_1.default.REF,
+            owner: config_1.default.USER,
+            repo: config_1.default.REPOSITORY,
+            ref: config_1.default.REF,
             required_contexts: [],
-            environment: config_js_1.default.GITHUB_DEPLOYMENT_ENV ||
-                (config_js_1.default.PRODUCTION ? "Production" : "Preview"),
+            environment: config_1.default.GITHUB_DEPLOYMENT_ENV ||
+                (config_1.default.PRODUCTION ? "Production" : "Preview"),
             description: "Deploy to Vercel",
             auto_merge: false,
         });
@@ -245,24 +242,24 @@ const init = () => {
             return;
         }
         const deploymentStatus = await client["rest"].repos.createDeploymentStatus({
-            owner: config_js_1.default.USER,
-            repo: config_js_1.default.REPOSITORY,
+            owner: config_1.default.USER,
+            repo: config_1.default.REPOSITORY,
             deployment_id: deploymentId,
             state: status,
-            log_url: config_js_1.default.LOG_URL,
-            environment_url: url || config_js_1.default.LOG_URL,
+            log_url: config_1.default.LOG_URL,
+            environment_url: url || config_1.default.LOG_URL,
             description: "Starting deployment to Vercel",
         });
         return deploymentStatus.data;
     };
     const deleteExistingComment = async () => {
-        if (!config_js_1.default.PR_NUMBER) {
+        if (!config_1.default.PR_NUMBER) {
             throw new Error("PR_NUMBER is required for this operation");
         }
         const { data } = await client["rest"].issues.listComments({
-            owner: config_js_1.default.USER,
-            repo: config_js_1.default.REPOSITORY,
-            issue_number: config_js_1.default.PR_NUMBER,
+            owner: config_1.default.USER,
+            repo: config_1.default.REPOSITORY,
+            issue_number: config_1.default.PR_NUMBER,
         });
         if (data.length < 1) {
             return undefined;
@@ -270,8 +267,8 @@ const init = () => {
         const comment = data.find((comment) => comment.body?.includes("This pull request has been deployed to Vercel."));
         if (comment) {
             await client["rest"].issues.deleteComment({
-                owner: config_js_1.default.USER,
-                repo: config_js_1.default.REPOSITORY,
+                owner: config_1.default.USER,
+                repo: config_1.default.REPOSITORY,
                 comment_id: comment.id,
             });
             return comment.id;
@@ -281,34 +278,34 @@ const init = () => {
     const createComment = async (body) => {
         // Remove indentation
         const dedented = body.replace(/^[^\S\n]+/gm, "");
-        if (!config_js_1.default.PR_NUMBER) {
+        if (!config_1.default.PR_NUMBER) {
             throw new Error("PR_NUMBER is required for this operation");
         }
         const comment = await client["rest"].issues.createComment({
-            owner: config_js_1.default.USER,
-            repo: config_js_1.default.REPOSITORY,
-            issue_number: config_js_1.default.PR_NUMBER,
+            owner: config_1.default.USER,
+            repo: config_1.default.REPOSITORY,
+            issue_number: config_1.default.PR_NUMBER,
             body: dedented,
         });
         return comment.data;
     };
     const addLabel = async () => {
-        if (!config_js_1.default.PR_NUMBER) {
+        if (!config_1.default.PR_NUMBER) {
             throw new Error("PR_NUMBER is required for this operation");
         }
         const label = await client["rest"].issues.addLabels({
-            owner: config_js_1.default.USER,
-            repo: config_js_1.default.REPOSITORY,
-            issue_number: config_js_1.default.PR_NUMBER,
-            labels: config_js_1.default.PR_LABELS,
+            owner: config_1.default.USER,
+            repo: config_1.default.REPOSITORY,
+            issue_number: config_1.default.PR_NUMBER,
+            labels: config_1.default.PR_LABELS,
         });
         return label.data;
     };
     const getCommit = async () => {
         const { data } = await client["rest"].repos.getCommit({
-            owner: config_js_1.default.USER,
-            repo: config_js_1.default.REPOSITORY,
-            ref: config_js_1.default.REF,
+            owner: config_1.default.USER,
+            repo: config_1.default.REPOSITORY,
+            ref: config_1.default.REF,
         });
         return {
             authorName: data.commit.author?.name || "",
@@ -463,20 +460,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(9999));
 const crypto_1 = __nccwpck_require__(6982);
-const github_js_1 = __nccwpck_require__(9700);
-const vercel_js_1 = __nccwpck_require__(4352);
-const helpers_js_1 = __nccwpck_require__(8402);
-const config_js_1 = __importDefault(__nccwpck_require__(1945));
+const github_1 = __nccwpck_require__(9700);
+const vercel_1 = __nccwpck_require__(4352);
+const helpers_1 = __nccwpck_require__(8402);
+const config_1 = __importDefault(__nccwpck_require__(1945));
 const urlSafeParameter = (input) => input.replace(/[^a-z0-9_~]/gi, "-");
 const run = async () => {
-    const github = (0, github_js_1.init)();
+    const github = (0, github_1.init)();
     // Refuse to deploy an untrusted fork
-    if (config_js_1.default.IS_FORK === true && config_js_1.default.DEPLOY_PR_FROM_FORK === false) {
+    if (config_1.default.IS_FORK === true && config_1.default.DEPLOY_PR_FROM_FORK === false) {
         core.warning("PR is from fork and DEPLOY_PR_FROM_FORK is set to false");
         const body = `
-			Refusing to deploy this Pull Request to Vercel because it originates from @${config_js_1.default.ACTOR}'s fork.
+			Refusing to deploy this Pull Request to Vercel because it originates from @${config_1.default.ACTOR}'s fork.
 
-			**@${config_js_1.default.USER}** To allow this behaviour set \`DEPLOY_PR_FROM_FORK\` to true ([more info](https://github.com/BetaHuhn/deploy-to-vercel-action#deploying-a-pr-made-from-a-fork-or-dependabot)).
+			**@${config_1.default.USER}** To allow this behaviour set \`DEPLOY_PR_FROM_FORK\` to true ([more info](https://github.com/BetaHuhn/deploy-to-vercel-action#deploying-a-pr-made-from-a-fork-or-dependabot)).
 		`;
         const comment = await github.createComment(body);
         core.info(`Comment created: ${comment.html_url}`);
@@ -485,7 +482,7 @@ const run = async () => {
         core.info("Done");
         return;
     }
-    if (config_js_1.default.GITHUB_DEPLOYMENT) {
+    if (config_1.default.GITHUB_DEPLOYMENT) {
         core.info("Creating GitHub deployment");
         const ghDeployment = await github.createDeployment();
         core.info(`Deployment #${ghDeployment.id} created`);
@@ -494,23 +491,23 @@ const run = async () => {
     }
     try {
         core.info("Creating deployment with Vercel CLI");
-        const vercel = (0, vercel_js_1.init)();
-        const commit = config_js_1.default.ATTACH_COMMIT_METADATA
+        const vercel = (0, vercel_1.init)();
+        const commit = config_1.default.ATTACH_COMMIT_METADATA
             ? await github.getCommit()
             : undefined;
         const deploymentUrl = await vercel.deploy(commit);
         core.info("Successfully deployed to Vercel!");
         const deploymentUrls = [];
-        if (config_js_1.default.IS_PR && config_js_1.default.PR_PREVIEW_DOMAIN) {
+        if (config_1.default.IS_PR && config_1.default.PR_PREVIEW_DOMAIN) {
             core.info("Assigning custom preview domain to PR");
-            if (typeof config_js_1.default.PR_PREVIEW_DOMAIN !== "string") {
+            if (typeof config_1.default.PR_PREVIEW_DOMAIN !== "string") {
                 throw new Error("invalid type for PR_PREVIEW_DOMAIN");
             }
-            const alias = config_js_1.default.PR_PREVIEW_DOMAIN.replace("{USER}", urlSafeParameter(config_js_1.default.USER))
-                .replace("{REPO}", urlSafeParameter(config_js_1.default.REPOSITORY))
-                .replace("{BRANCH}", urlSafeParameter(config_js_1.default.BRANCH))
-                .replace("{PR}", config_js_1.default.PR_NUMBER?.toString() || "")
-                .replace("{SHA}", config_js_1.default.SHA.substring(0, 7))
+            const alias = config_1.default.PR_PREVIEW_DOMAIN.replace("{USER}", urlSafeParameter(config_1.default.USER))
+                .replace("{REPO}", urlSafeParameter(config_1.default.REPOSITORY))
+                .replace("{BRANCH}", urlSafeParameter(config_1.default.BRANCH))
+                .replace("{PR}", config_1.default.PR_NUMBER?.toString() || "")
+                .replace("{SHA}", config_1.default.SHA.substring(0, 7))
                 .toLowerCase();
             const previewDomainSuffix = ".vercel.app";
             let nextAlias = alias;
@@ -520,7 +517,7 @@ const run = async () => {
                     core.warning(`The alias ${prefix} exceeds 60 chars in length, truncating using vercel's rules. See https://vercel.com/docs/concepts/deployments/automatic-urls#automatic-branch-urls`);
                     prefix = prefix.substring(0, 55);
                     const uniqueSuffix = (0, crypto_1.createHash)("sha256")
-                        .update(`git-${config_js_1.default.BRANCH}-${config_js_1.default.REPOSITORY}`)
+                        .update(`git-${config_1.default.BRANCH}-${config_1.default.REPOSITORY}`)
                         .digest("hex")
                         .slice(0, 6);
                     nextAlias = `${prefix}-${uniqueSuffix}${previewDomainSuffix}`;
@@ -528,45 +525,45 @@ const run = async () => {
                 }
             }
             await vercel.assignAlias(nextAlias);
-            deploymentUrls.push((0, helpers_js_1.addSchema)(nextAlias));
+            deploymentUrls.push((0, helpers_1.addSchema)(nextAlias));
         }
-        if (!config_js_1.default.IS_PR && config_js_1.default.ALIAS_DOMAINS) {
+        if (!config_1.default.IS_PR && config_1.default.ALIAS_DOMAINS) {
             core.info("Assigning custom domains to Vercel deployment");
-            if (!Array.isArray(config_js_1.default.ALIAS_DOMAINS)) {
+            if (!Array.isArray(config_1.default.ALIAS_DOMAINS)) {
                 throw new Error("invalid type for PR_PREVIEW_DOMAIN");
             }
-            for (let i = 0; i < config_js_1.default.ALIAS_DOMAINS.length; i++) {
-                const alias = config_js_1.default.ALIAS_DOMAINS[i];
+            for (let i = 0; i < config_1.default.ALIAS_DOMAINS.length; i++) {
+                const alias = config_1.default.ALIAS_DOMAINS[i];
                 if (!alias) {
                     continue;
                 }
                 const processedAlias = alias
-                    .replace("{USER}", urlSafeParameter(config_js_1.default.USER))
-                    .replace("{REPO}", urlSafeParameter(config_js_1.default.REPOSITORY))
-                    .replace("{BRANCH}", urlSafeParameter(config_js_1.default.BRANCH))
-                    .replace("{SHA}", config_js_1.default.SHA.substring(0, 7))
+                    .replace("{USER}", urlSafeParameter(config_1.default.USER))
+                    .replace("{REPO}", urlSafeParameter(config_1.default.REPOSITORY))
+                    .replace("{BRANCH}", urlSafeParameter(config_1.default.BRANCH))
+                    .replace("{SHA}", config_1.default.SHA.substring(0, 7))
                     .toLowerCase();
                 await vercel.assignAlias(processedAlias);
-                deploymentUrls.push((0, helpers_js_1.addSchema)(processedAlias));
+                deploymentUrls.push((0, helpers_1.addSchema)(processedAlias));
             }
         }
-        deploymentUrls.push((0, helpers_js_1.addSchema)(deploymentUrl));
+        deploymentUrls.push((0, helpers_1.addSchema)(deploymentUrl));
         const previewUrl = deploymentUrls[0];
         const deployment = await vercel.getDeployment();
         core.info(`Deployment "${deployment.id}" available at: ${deploymentUrls.join(", ")}`);
-        if (config_js_1.default.GITHUB_DEPLOYMENT) {
+        if (config_1.default.GITHUB_DEPLOYMENT) {
             core.info('Changing GitHub deployment status to "success"');
             await github.updateDeployment("success", previewUrl);
         }
-        if (config_js_1.default.IS_PR) {
-            if (config_js_1.default.DELETE_EXISTING_COMMENT) {
+        if (config_1.default.IS_PR) {
+            if (config_1.default.DELETE_EXISTING_COMMENT) {
                 core.info("Checking for existing comment on PR");
                 const deletedCommentId = await github.deleteExistingComment();
                 if (deletedCommentId) {
                     core.info(`Deleted existing comment #${deletedCommentId}`);
                 }
             }
-            if (config_js_1.default.CREATE_COMMENT) {
+            if (config_1.default.CREATE_COMMENT) {
                 core.info("Creating new comment on PR");
                 const body = `
 					This pull request has been deployed to Vercel.
@@ -574,7 +571,7 @@ const run = async () => {
 					<table>
 						<tr>
 							<td><strong>Latest commit:</strong></td>
-							<td><code>${config_js_1.default.SHA.substring(0, 7)}</code></td>
+							<td><code>${config_1.default.SHA.substring(0, 7)}</code></td>
 						</tr>
 						<tr>
 							<td><strong>✅ Preview:</strong></td>
@@ -586,12 +583,12 @@ const run = async () => {
 						</tr>
 					</table>
 
-					[View Workflow Logs](${config_js_1.default.LOG_URL})
+					[View Workflow Logs](${config_1.default.LOG_URL})
 				`;
                 const comment = await github.createComment(body);
                 core.info(`Comment created: ${comment.html_url}`);
             }
-            if (config_js_1.default.PR_LABELS) {
+            if (config_1.default.PR_LABELS) {
                 core.info("Adding label(s) to PR");
                 const labels = await github.addLabel();
                 core.info(`Label(s) "${labels.map((label) => label.name).join(", ")}" added`);
@@ -603,7 +600,7 @@ const run = async () => {
         core.setOutput("DEPLOYMENT_ID", deployment.id);
         core.setOutput("DEPLOYMENT_INSPECTOR_URL", deployment.inspectorUrl);
         core.setOutput("DEPLOYMENT_CREATED", true);
-        core.setOutput("COMMENT_CREATED", config_js_1.default.IS_PR && config_js_1.default.CREATE_COMMENT);
+        core.setOutput("COMMENT_CREATED", config_1.default.IS_PR && config_1.default.CREATE_COMMENT);
         core.info("Done");
     }
     catch (err) {
@@ -665,53 +662,53 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.init = void 0;
 const core = __importStar(__nccwpck_require__(9999));
-const helpers_js_1 = __nccwpck_require__(8402);
-const config_js_1 = __importDefault(__nccwpck_require__(1945));
+const helpers_1 = __nccwpck_require__(8402);
+const config_1 = __importDefault(__nccwpck_require__(1945));
 const init = () => {
     core.info("Setting environment variables for Vercel CLI");
-    core.exportVariable("VERCEL_ORG_ID", config_js_1.default.VERCEL_ORG_ID);
-    core.exportVariable("VERCEL_PROJECT_ID", config_js_1.default.VERCEL_PROJECT_ID);
+    core.exportVariable("VERCEL_ORG_ID", config_1.default.VERCEL_ORG_ID);
+    core.exportVariable("VERCEL_PROJECT_ID", config_1.default.VERCEL_PROJECT_ID);
     let deploymentUrl = "";
     const deploy = async (commit) => {
-        let commandArguments = [`--token=${config_js_1.default.VERCEL_TOKEN}`];
-        if (config_js_1.default.VERCEL_SCOPE) {
-            commandArguments.push(`--scope=${config_js_1.default.VERCEL_SCOPE}`);
+        let commandArguments = [`--token=${config_1.default.VERCEL_TOKEN}`];
+        if (config_1.default.VERCEL_SCOPE) {
+            commandArguments.push(`--scope=${config_1.default.VERCEL_SCOPE}`);
         }
-        if (config_js_1.default.PRODUCTION) {
+        if (config_1.default.PRODUCTION) {
             commandArguments.push("--prod");
         }
-        if (config_js_1.default.PREBUILT) {
+        if (config_1.default.PREBUILT) {
             commandArguments.push("--prebuilt");
         }
-        if (config_js_1.default.FORCE) {
+        if (config_1.default.FORCE) {
             commandArguments.push("--force");
         }
         if (commit) {
             const metadata = [
                 `githubCommitAuthorName=${commit.authorName}`,
                 `githubCommitAuthorLogin=${commit.authorLogin}`,
-                `githubCommitMessage=${config_js_1.default.TRIM_COMMIT_MESSAGE
+                `githubCommitMessage=${config_1.default.TRIM_COMMIT_MESSAGE
                     ? commit.commitMessage.split(/\r?\n/)[0]
                     : commit.commitMessage}`,
-                `githubCommitOrg=${config_js_1.default.USER}`,
-                `githubCommitRepo=${config_js_1.default.REPOSITORY}`,
-                `githubCommitRef=${config_js_1.default.REF}`,
-                `githubCommitSha=${config_js_1.default.SHA}`,
-                `githubOrg=${config_js_1.default.USER}`,
-                `githubRepo=${config_js_1.default.REPOSITORY}`,
+                `githubCommitOrg=${config_1.default.USER}`,
+                `githubCommitRepo=${config_1.default.REPOSITORY}`,
+                `githubCommitRef=${config_1.default.REF}`,
+                `githubCommitSha=${config_1.default.SHA}`,
+                `githubOrg=${config_1.default.USER}`,
+                `githubRepo=${config_1.default.REPOSITORY}`,
                 "githubDeployment=1",
             ];
             metadata.forEach((item) => {
                 commandArguments = commandArguments.concat(["--meta", item]);
             });
         }
-        if (config_js_1.default.BUILD_ENV) {
-            config_js_1.default.BUILD_ENV.forEach((item) => {
+        if (config_1.default.BUILD_ENV) {
+            config_1.default.BUILD_ENV.forEach((item) => {
                 commandArguments = commandArguments.concat(["--build-env", item]);
             });
         }
         core.info("Starting deploy with Vercel CLI");
-        const output = await (0, helpers_js_1.exec)("vercel", commandArguments, config_js_1.default.WORKING_DIRECTORY);
+        const output = await (0, helpers_1.exec)("vercel", commandArguments, config_1.default.WORKING_DIRECTORY);
         const parsed = output.match(/(?<=https?:\/\/)(.*)/g)?.[0];
         if (!parsed) {
             throw new Error("Could not parse deploymentUrl");
@@ -721,23 +718,23 @@ const init = () => {
     };
     const assignAlias = async (aliasUrl) => {
         const commandArguments = [
-            `--token=${config_js_1.default.VERCEL_TOKEN}`,
+            `--token=${config_1.default.VERCEL_TOKEN}`,
             "alias",
             "set",
             deploymentUrl,
-            (0, helpers_js_1.removeSchema)(aliasUrl),
+            (0, helpers_1.removeSchema)(aliasUrl),
         ];
-        if (config_js_1.default.VERCEL_SCOPE) {
-            commandArguments.push(`--scope=${config_js_1.default.VERCEL_SCOPE}`);
+        if (config_1.default.VERCEL_SCOPE) {
+            commandArguments.push(`--scope=${config_1.default.VERCEL_SCOPE}`);
         }
-        const output = await (0, helpers_js_1.exec)("vercel", commandArguments, config_js_1.default.WORKING_DIRECTORY);
+        const output = await (0, helpers_1.exec)("vercel", commandArguments, config_1.default.WORKING_DIRECTORY);
         return output;
     };
     const getDeployment = async () => {
         const url = `https://api.vercel.com/v13/deployments/${deploymentUrl}`;
         const options = {
             headers: {
-                Authorization: `Bearer ${config_js_1.default.VERCEL_TOKEN}`,
+                Authorization: `Bearer ${config_1.default.VERCEL_TOKEN}`,
             },
         };
         const got = (await __nccwpck_require__.e(/* import() */ 398).then(__nccwpck_require__.bind(__nccwpck_require__, 4398))).default;

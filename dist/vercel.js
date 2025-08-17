@@ -38,53 +38,53 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.init = void 0;
 const core = __importStar(require("@actions/core"));
-const helpers_js_1 = require("./helpers.js");
-const config_js_1 = __importDefault(require("./config.js"));
+const helpers_1 = require("./helpers");
+const config_1 = __importDefault(require("./config"));
 const init = () => {
     core.info("Setting environment variables for Vercel CLI");
-    core.exportVariable("VERCEL_ORG_ID", config_js_1.default.VERCEL_ORG_ID);
-    core.exportVariable("VERCEL_PROJECT_ID", config_js_1.default.VERCEL_PROJECT_ID);
+    core.exportVariable("VERCEL_ORG_ID", config_1.default.VERCEL_ORG_ID);
+    core.exportVariable("VERCEL_PROJECT_ID", config_1.default.VERCEL_PROJECT_ID);
     let deploymentUrl = "";
     const deploy = async (commit) => {
-        let commandArguments = [`--token=${config_js_1.default.VERCEL_TOKEN}`];
-        if (config_js_1.default.VERCEL_SCOPE) {
-            commandArguments.push(`--scope=${config_js_1.default.VERCEL_SCOPE}`);
+        let commandArguments = [`--token=${config_1.default.VERCEL_TOKEN}`];
+        if (config_1.default.VERCEL_SCOPE) {
+            commandArguments.push(`--scope=${config_1.default.VERCEL_SCOPE}`);
         }
-        if (config_js_1.default.PRODUCTION) {
+        if (config_1.default.PRODUCTION) {
             commandArguments.push("--prod");
         }
-        if (config_js_1.default.PREBUILT) {
+        if (config_1.default.PREBUILT) {
             commandArguments.push("--prebuilt");
         }
-        if (config_js_1.default.FORCE) {
+        if (config_1.default.FORCE) {
             commandArguments.push("--force");
         }
         if (commit) {
             const metadata = [
                 `githubCommitAuthorName=${commit.authorName}`,
                 `githubCommitAuthorLogin=${commit.authorLogin}`,
-                `githubCommitMessage=${config_js_1.default.TRIM_COMMIT_MESSAGE
+                `githubCommitMessage=${config_1.default.TRIM_COMMIT_MESSAGE
                     ? commit.commitMessage.split(/\r?\n/)[0]
                     : commit.commitMessage}`,
-                `githubCommitOrg=${config_js_1.default.USER}`,
-                `githubCommitRepo=${config_js_1.default.REPOSITORY}`,
-                `githubCommitRef=${config_js_1.default.REF}`,
-                `githubCommitSha=${config_js_1.default.SHA}`,
-                `githubOrg=${config_js_1.default.USER}`,
-                `githubRepo=${config_js_1.default.REPOSITORY}`,
+                `githubCommitOrg=${config_1.default.USER}`,
+                `githubCommitRepo=${config_1.default.REPOSITORY}`,
+                `githubCommitRef=${config_1.default.REF}`,
+                `githubCommitSha=${config_1.default.SHA}`,
+                `githubOrg=${config_1.default.USER}`,
+                `githubRepo=${config_1.default.REPOSITORY}`,
                 "githubDeployment=1",
             ];
             metadata.forEach((item) => {
                 commandArguments = commandArguments.concat(["--meta", item]);
             });
         }
-        if (config_js_1.default.BUILD_ENV) {
-            config_js_1.default.BUILD_ENV.forEach((item) => {
+        if (config_1.default.BUILD_ENV) {
+            config_1.default.BUILD_ENV.forEach((item) => {
                 commandArguments = commandArguments.concat(["--build-env", item]);
             });
         }
         core.info("Starting deploy with Vercel CLI");
-        const output = await (0, helpers_js_1.exec)("vercel", commandArguments, config_js_1.default.WORKING_DIRECTORY);
+        const output = await (0, helpers_1.exec)("vercel", commandArguments, config_1.default.WORKING_DIRECTORY);
         const parsed = output.match(/(?<=https?:\/\/)(.*)/g)?.[0];
         if (!parsed) {
             throw new Error("Could not parse deploymentUrl");
@@ -94,23 +94,23 @@ const init = () => {
     };
     const assignAlias = async (aliasUrl) => {
         const commandArguments = [
-            `--token=${config_js_1.default.VERCEL_TOKEN}`,
+            `--token=${config_1.default.VERCEL_TOKEN}`,
             "alias",
             "set",
             deploymentUrl,
-            (0, helpers_js_1.removeSchema)(aliasUrl),
+            (0, helpers_1.removeSchema)(aliasUrl),
         ];
-        if (config_js_1.default.VERCEL_SCOPE) {
-            commandArguments.push(`--scope=${config_js_1.default.VERCEL_SCOPE}`);
+        if (config_1.default.VERCEL_SCOPE) {
+            commandArguments.push(`--scope=${config_1.default.VERCEL_SCOPE}`);
         }
-        const output = await (0, helpers_js_1.exec)("vercel", commandArguments, config_js_1.default.WORKING_DIRECTORY);
+        const output = await (0, helpers_1.exec)("vercel", commandArguments, config_1.default.WORKING_DIRECTORY);
         return output;
     };
     const getDeployment = async () => {
         const url = `https://api.vercel.com/v13/deployments/${deploymentUrl}`;
         const options = {
             headers: {
-                Authorization: `Bearer ${config_js_1.default.VERCEL_TOKEN}`,
+                Authorization: `Bearer ${config_1.default.VERCEL_TOKEN}`,
             },
         };
         const got = (await import("got")).default;

@@ -1,1 +1,1 @@
-{"version":3,"file":"github.d.ts","sourceRoot":"","sources":["../src/github.ts"],"names":[],"mappings":"AACA,OAAO,EACL,YAAY,EAMb,MAAM,YAAY,CAAC;AAGpB,QAAA,MAAM,IAAI,QAAO,YA6IhB,CAAC;AAEF,OAAO,EAAE,IAAI,EAAE,CAAC"}
+{"version":3,"file":"github.d.ts","sourceRoot":"","sources":["../src/github.ts"],"names":[],"mappings":"AACA,OAAO,EACL,YAAY,EAMb,MAAM,SAAS,CAAC;AAGjB,QAAA,MAAM,IAAI,QAAO,YA6IhB,CAAC;AAEF,OAAO,EAAE,IAAI,EAAE,CAAC"}

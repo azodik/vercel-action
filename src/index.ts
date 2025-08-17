@@ -1,9 +1,9 @@
 import * as core from "@actions/core";
 import { createHash } from "crypto";
-import { init as Github } from "./github.js";
-import { init as Vercel } from "./vercel.js";
-import { addSchema } from "./helpers.js";
-import context from "./config.js";
+import { init as Github } from "./github";
+import { init as Vercel } from "./vercel";
+import { addSchema } from "./helpers";
+import context from "./config";
 
 const urlSafeParameter = (input: string): string =>
   input.replace(/[^a-z0-9_~]/gi, "-");

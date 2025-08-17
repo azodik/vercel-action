@@ -1,7 +1,7 @@
 import * as core from "@actions/core";
-import { exec, removeSchema } from "./helpers.js";
-import { VercelClient, VercelDeployment, Commit } from "./types.js";
-import context from "./config.js";
+import { exec, removeSchema } from "./helpers";
+import { VercelClient, VercelDeployment, Commit } from "./types";
+import context from "./config";
 
 const init = (): VercelClient => {
   core.info("Setting environment variables for Vercel CLI");
@@ -62,7 +62,7 @@ const init = (): VercelClient => {
     const output = await exec(
       "vercel",
       commandArguments,
-      context.WORKING_DIRECTORY,
+      context.WORKING_DIRECTORY
     );
     const parsed = output.match(/(?<=https?:\/\/)(.*)/g)?.[0];
 
@@ -91,7 +91,7 @@ const init = (): VercelClient => {
     const output = await exec(
       "vercel",
       commandArguments,
-      context.WORKING_DIRECTORY,
+      context.WORKING_DIRECTORY
     );
 
     return output;
