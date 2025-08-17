@@ -42,7 +42,7 @@ const run = async (): Promise<void> => {
 
   try {
     core.info("Creating deployment with Vercel CLI");
-    const vercel = Vercel();
+    const vercel = await Vercel();
 
     const commit = context.ATTACH_COMMIT_METADATA
       ? await github.getCommit()

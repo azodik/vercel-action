@@ -40,7 +40,9 @@ exports.init = void 0;
 const core = __importStar(require("@actions/core"));
 const helpers_1 = require("./helpers");
 const config_1 = __importDefault(require("./config"));
-const init = () => {
+const init = async () => {
+    core.info("Installing Vercel CLI");
+    await (0, helpers_1.exec)("npm", ["install", "-g", "vercel"]);
     core.info("Setting environment variables for Vercel CLI");
     core.exportVariable("VERCEL_ORG_ID", config_1.default.VERCEL_ORG_ID);
     core.exportVariable("VERCEL_PROJECT_ID", config_1.default.VERCEL_PROJECT_ID);

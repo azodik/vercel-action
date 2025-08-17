@@ -491,7 +491,7 @@ const run = async () => {
     }
     try {
         core.info("Creating deployment with Vercel CLI");
-        const vercel = (0, vercel_1.init)();
+        const vercel = await (0, vercel_1.init)();
         const commit = config_1.default.ATTACH_COMMIT_METADATA
             ? await github.getCommit()
             : undefined;
@@ -664,7 +664,9 @@ exports.init = void 0;
 const core = __importStar(__nccwpck_require__(9999));
 const helpers_1 = __nccwpck_require__(8402);
 const config_1 = __importDefault(__nccwpck_require__(1945));
-const init = () => {
+const init = async () => {
+    core.info("Installing Vercel CLI");
+    await (0, helpers_1.exec)("npm", ["install", "-g", "vercel"]);
     core.info("Setting environment variables for Vercel CLI");
     core.exportVariable("VERCEL_ORG_ID", config_1.default.VERCEL_ORG_ID);
     core.exportVariable("VERCEL_PROJECT_ID", config_1.default.VERCEL_PROJECT_ID);

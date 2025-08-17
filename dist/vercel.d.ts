@@ -1,4 +1,4 @@
 import { VercelClient } from "./types";
-declare const init: () => VercelClient;
+declare const init: () => Promise<VercelClient>;
 export { init };
 //# sourceMappingURL=vercel.d.ts.map

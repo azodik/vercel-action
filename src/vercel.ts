@@ -3,7 +3,10 @@ import { exec, removeSchema } from "./helpers";
 import { VercelClient, VercelDeployment, Commit } from "./types";
 import context from "./config";
 
-const init = (): VercelClient => {
+const init = async (): Promise<VercelClient> => {
+  core.info("Installing Vercel CLI");
+  await exec("npm", ["install", "-g", "vercel"]);
+
   core.info("Setting environment variables for Vercel CLI");
   core.exportVariable("VERCEL_ORG_ID", context.VERCEL_ORG_ID);
   core.exportVariable("VERCEL_PROJECT_ID", context.VERCEL_PROJECT_ID);
