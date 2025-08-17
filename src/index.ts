@@ -31,7 +31,7 @@ const generateUniqueAlias = (alias: string): string => {
     core.warning(
       `The alias ${prefix} exceeds ${MAX_ALIAS_LENGTH} chars in length, truncating using Vercel's rules. See https://vercel.com/docs/concepts/deployments/automatic-urls#automatic-branch-urls`
     );
-    
+
     prefix = prefix.substring(0, TRUNCATED_PREFIX_LENGTH);
     const uniqueSuffix = createHash("sha256")
       .update(`git-${context.BRANCH}-${context.REPOSITORY}`)
@@ -100,7 +100,7 @@ const run = async (): Promise<void> => {
     const commit = context.ATTACH_COMMIT_METADATA
       ? await github.getCommit()
       : undefined;
-    
+
     const deploymentUrl = await vercel.deploy(commit);
     core.info("Successfully deployed to Vercel!");
 
@@ -114,8 +114,10 @@ const run = async (): Promise<void> => {
         throw new Error("Invalid type for PR_PREVIEW_DOMAIN");
       }
 
-      const alias = context.PR_PREVIEW_DOMAIN
-        .replace("{USER}", urlSafeParameter(context.USER))
+      const alias = context.PR_PREVIEW_DOMAIN.replace(
+        "{USER}",
+        urlSafeParameter(context.USER)
+      )
         .replace("{REPO}", urlSafeParameter(context.REPOSITORY))
         .replace("{BRANCH}", urlSafeParameter(context.BRANCH))
         .replace("{PR}", context.PR_NUMBER?.toString() || "")
@@ -208,7 +210,10 @@ const run = async (): Promise<void> => {
     // Set outputs
     core.setOutput("PREVIEW_URL", previewUrl);
     core.setOutput("DEPLOYMENT_URLS", deploymentUrls);
-    core.setOutput("DEPLOYMENT_UNIQUE_URL", deploymentUrls[deploymentUrls.length - 1]);
+    core.setOutput(
+      "DEPLOYMENT_UNIQUE_URL",
+      deploymentUrls[deploymentUrls.length - 1]
+    );
     core.setOutput("DEPLOYMENT_ID", deployment.id);
     core.setOutput("DEPLOYMENT_INSPECTOR_URL", deployment.inspectorUrl);
     core.setOutput("DEPLOYMENT_CREATED", true);
@@ -221,10 +226,16 @@ const run = async (): Promise<void> => {
       try {
         await github.updateDeployment("failure");
       } catch (updateError) {
-        core.warning(`Failed to update deployment status: ${updateError instanceof Error ? updateError.message : String(updateError)}`);
+        core.warning(
+          `Failed to update deployment status: ${
+            updateError instanceof Error
+              ? updateError.message
+              : String(updateError)
+          }`
+        );
       }
     }
-    
+
     core.setFailed(err instanceof Error ? err.message : String(err));
   }
 };

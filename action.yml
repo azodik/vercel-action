@@ -23,6 +23,10 @@ inputs:
     description: |
       Deploy to production environment. Set to false for preview deployments (default: true).
     required: false
+  STAGING:
+    description: |
+      Deploy to staging environment. Uses --target=staging flag (default: false).
+    required: false
   PREBUILT:
     description: |
       Deploy a pre-built project without running build commands (default: false).
