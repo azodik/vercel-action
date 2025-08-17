@@ -9,6 +9,7 @@ export interface Config {
 
   // Deployment settings
   PRODUCTION: boolean;
+  STAGING: boolean;
   PREBUILT: boolean;
   FORCE: boolean;
 

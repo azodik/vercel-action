@@ -33,6 +33,11 @@ const init = async (): Promise<VercelClient> => {
         commandArguments.push("--prod");
       }
 
+      // Add staging flag
+      if (context.STAGING) {
+        commandArguments.push("--target=staging");
+      }
+
       // Add prebuilt flag
       if (context.PREBUILT) {
         commandArguments.push("--prebuilt");
