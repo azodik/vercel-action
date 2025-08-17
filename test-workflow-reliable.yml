@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy to Vercel
-        uses: azodik/vercel-action@36ae28dc3495a20432c6bb43cf8b0807d248b4aa
+        uses: azodik/vercel-action@45eaf5459e4067bb47ef52e47a9885f4293503ae
         with:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
