@@ -1,144 +1,238 @@
 import * as github from "@actions/github";
+import * as core from "@actions/core";
 import {
-  GitHubClient,
-  GitHubDeployment,
-  GitHubDeploymentStatus,
-  GitHubComment,
-  GitHubLabel,
-  Commit,
+  type GitHubClient,
+  type GitHubDeployment,
+  type GitHubDeploymentStatus,
+  type GitHubComment,
+  type GitHubLabel,
+  type Commit,
 } from "./types";
 import context from "./config";
 
+// GitHub API previews for better functionality
+const GITHUB_PREVIEWS = ["flash", "ant-man"] as const;
+
+// Deployment status types
+const DEPLOYMENT_STATUSES = [
+  "error",
+  "failure",
+  "inactive",
+  "in_progress",
+  "queued",
+  "pending",
+  "success",
+] as const;
+
+type DeploymentStatus = (typeof DEPLOYMENT_STATUSES)[number];
+
+/**
+ * Initialize GitHub client with optimized configuration
+ */
 const init = (): GitHubClient => {
   const client = github.getOctokit(context.GITHUB_TOKEN, {
-    previews: ["flash", "ant-man"],
+    previews: [...GITHUB_PREVIEWS],
   });
 
-  let deploymentId: number;
+  let deploymentId: number | undefined;
 
+  /**
+   * Create a GitHub deployment
+   */
   const createDeployment = async (): Promise<GitHubDeployment> => {
-    const deployment = await client["rest"].repos.createDeployment({
-      owner: context.USER,
-      repo: context.REPOSITORY,
-      ref: context.REF,
-      required_contexts: [],
-      environment:
+    try {
+      const environment =
         context.GITHUB_DEPLOYMENT_ENV ||
-        (context.PRODUCTION ? "Production" : "Preview"),
-      description: "Deploy to Vercel",
-      auto_merge: false,
-    });
+        (context.PRODUCTION ? "Production" : "Preview");
 
-    if ("message" in deployment.data) {
-      throw new Error(`GitHub API error: ${deployment.data.message}`);
+      const deployment = await client.rest.repos.createDeployment({
+        owner: context.USER,
+        repo: context.REPOSITORY,
+        ref: context.REF,
+        required_contexts: [],
+        environment,
+        description: "Deploy to Vercel",
+        auto_merge: false,
+      });
+
+      if ("message" in deployment.data) {
+        throw new Error(`GitHub API error: ${deployment.data.message}`);
+      }
+
+      const deploymentData = deployment.data as GitHubDeployment;
+      deploymentId = deploymentData.id;
+
+      core.info(`Created GitHub deployment #${deploymentData.id}`);
+      return deploymentData;
+    } catch (error) {
+      core.error(
+        `Failed to create GitHub deployment: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+      throw error;
     }
-
-    const deploymentData = deployment.data as GitHubDeployment;
-    deploymentId = deploymentData.id;
-
-    return deploymentData;
   };
 
+  /**
+   * Update deployment status
+   */
   const updateDeployment = async (
     status: string,
     url?: string
   ): Promise<GitHubDeploymentStatus | undefined> => {
     if (!deploymentId) {
+      core.warning("No deployment ID available for status update");
       return;
     }
 
-    const deploymentStatus = await client["rest"].repos.createDeploymentStatus({
-      owner: context.USER,
-      repo: context.REPOSITORY,
-      deployment_id: deploymentId,
-      state: status as
-        | "error"
-        | "failure"
-        | "inactive"
-        | "in_progress"
-        | "queued"
-        | "pending"
-        | "success",
-      log_url: context.LOG_URL,
-      environment_url: url || context.LOG_URL,
-      description: "Starting deployment to Vercel",
-    });
-
-    return deploymentStatus.data;
-  };
-
-  const deleteExistingComment = async (): Promise<number | undefined> => {
-    if (!context.PR_NUMBER) {
-      throw new Error("PR_NUMBER is required for this operation");
-    }
-    const { data } = await client["rest"].issues.listComments({
-      owner: context.USER,
-      repo: context.REPOSITORY,
-      issue_number: context.PR_NUMBER,
-    });
-
-    if (data.length < 1) {
-      return undefined;
-    }
-
-    const comment = data.find((comment: any) =>
-      comment.body?.includes("This pull request has been deployed to Vercel.")
-    );
-    if (comment) {
-      await client["rest"].issues.deleteComment({
+    try {
+      const deploymentStatus = await client.rest.repos.createDeploymentStatus({
         owner: context.USER,
         repo: context.REPOSITORY,
-        comment_id: comment.id,
+        deployment_id: deploymentId,
+        state: status as DeploymentStatus,
+        log_url: context.LOG_URL,
+        environment_url: url || context.LOG_URL,
+        description: `Deployment ${status} on Vercel`,
       });
 
-      return comment.id;
+      core.info(`Updated deployment #${deploymentId} status to "${status}"`);
+      return deploymentStatus.data;
+    } catch (error) {
+      core.error(
+        `Failed to update deployment status: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+      throw error;
     }
-    return undefined;
   };
 
+  /**
+   * Delete existing deployment comment
+   */
+  const deleteExistingComment = async (): Promise<number | undefined> => {
+    if (!context.PR_NUMBER) {
+      throw new Error("PR_NUMBER is required for comment operations");
+    }
+
+    try {
+      const { data } = await client.rest.issues.listComments({
+        owner: context.USER,
+        repo: context.REPOSITORY,
+        issue_number: context.PR_NUMBER,
+      });
+
+      const comment = data.find((comment: any) =>
+        comment.body?.includes("This pull request has been deployed to Vercel.")
+      );
+
+      if (comment) {
+        await client.rest.issues.deleteComment({
+          owner: context.USER,
+          repo: context.REPOSITORY,
+          comment_id: comment.id,
+        });
+
+        core.info(`Deleted existing comment #${comment.id}`);
+        return comment.id;
+      }
+
+      return undefined;
+    } catch (error) {
+      core.error(
+        `Failed to delete existing comment: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+      throw error;
+    }
+  };
+
+  /**
+   * Create deployment comment
+   */
   const createComment = async (body: string): Promise<GitHubComment> => {
-    // Remove indentation
-    const dedented = body.replace(/^[^\S\n]+/gm, "");
-
     if (!context.PR_NUMBER) {
-      throw new Error("PR_NUMBER is required for this operation");
+      throw new Error("PR_NUMBER is required for comment operations");
     }
-    const comment = await client["rest"].issues.createComment({
-      owner: context.USER,
-      repo: context.REPOSITORY,
-      issue_number: context.PR_NUMBER,
-      body: dedented,
-    });
 
-    return comment.data;
+    try {
+      // Remove indentation for cleaner comment
+      const dedented = body.replace(/^[^\S\n]+/gm, "");
+
+      const comment = await client.rest.issues.createComment({
+        owner: context.USER,
+        repo: context.REPOSITORY,
+        issue_number: context.PR_NUMBER,
+        body: dedented,
+      });
+
+      core.info(`Created comment #${comment.data.id}`);
+      return comment.data;
+    } catch (error) {
+      core.error(
+        `Failed to create comment: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+      throw error;
+    }
   };
 
-  const addLabel = async (): Promise<GitHubLabel[]> => {
+  /**
+   * Add labels to pull request
+   */
+  const addLabel = async (): Promise<readonly GitHubLabel[]> => {
     if (!context.PR_NUMBER) {
-      throw new Error("PR_NUMBER is required for this operation");
+      throw new Error("PR_NUMBER is required for label operations");
     }
-    const label = await client["rest"].issues.addLabels({
-      owner: context.USER,
-      repo: context.REPOSITORY,
-      issue_number: context.PR_NUMBER,
-      labels: context.PR_LABELS,
-    });
 
-    return label.data;
+    try {
+      const label = await client.rest.issues.addLabels({
+        owner: context.USER,
+        repo: context.REPOSITORY,
+        issue_number: context.PR_NUMBER,
+        labels: [...context.PR_LABELS],
+      });
+
+      core.info(`Added labels: ${label.data.map((l) => l.name).join(", ")}`);
+      return label.data;
+    } catch (error) {
+      core.error(
+        `Failed to add labels: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+      throw error;
+    }
   };
 
+  /**
+   * Get commit information
+   */
   const getCommit = async (): Promise<Commit> => {
-    const { data } = await client["rest"].repos.getCommit({
-      owner: context.USER,
-      repo: context.REPOSITORY,
-      ref: context.REF,
-    });
+    try {
+      const { data } = await client.rest.repos.getCommit({
+        owner: context.USER,
+        repo: context.REPOSITORY,
+        ref: context.REF,
+      });
 
-    return {
-      authorName: data.commit.author?.name || "",
-      authorLogin: data.author?.login || "",
-      commitMessage: data.commit.message,
-    };
+      return {
+        authorName: data.commit.author?.name || "",
+        authorLogin: data.author?.login || "",
+        commitMessage: data.commit.message,
+      };
+    } catch (error) {
+      core.error(
+        `Failed to get commit: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+      throw error;
+    }
   };
 
   return {

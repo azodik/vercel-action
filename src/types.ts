@@ -1,31 +1,45 @@
+// Core configuration interface
 export interface Config {
+  // Required tokens and IDs
   GITHUB_TOKEN: string;
   VERCEL_TOKEN: string;
   VERCEL_ORG_ID: string;
   VERCEL_PROJECT_ID: string;
+  GITHUB_REPOSITORY: string;
+
+  // Deployment settings
   PRODUCTION: boolean;
+  PREBUILT: boolean;
+  FORCE: boolean;
+
+  // GitHub integration settings
   GITHUB_DEPLOYMENT: boolean;
   CREATE_COMMENT: boolean;
   DELETE_EXISTING_COMMENT: boolean;
   ATTACH_COMMIT_METADATA: boolean;
   DEPLOY_PR_FROM_FORK: boolean;
-  PR_LABELS: string[];
-  ALIAS_DOMAINS: string[];
-  PR_PREVIEW_DOMAIN?: string | undefined;
-  VERCEL_SCOPE?: string | undefined;
-  GITHUB_REPOSITORY: string;
-  GITHUB_DEPLOYMENT_ENV?: string | undefined;
   TRIM_COMMIT_MESSAGE: boolean;
-  WORKING_DIRECTORY?: string | undefined;
-  BUILD_ENV: string[];
-  PREBUILT: boolean;
+
+  // Labels and domains
+  PR_LABELS: readonly string[];
+  ALIAS_DOMAINS: readonly string[];
+  PR_PREVIEW_DOMAIN?: string;
+
+  // Optional settings
+  VERCEL_SCOPE?: string;
+  GITHUB_DEPLOYMENT_ENV?: string;
+  WORKING_DIRECTORY?: string;
+  BUILD_ENV: readonly string[];
+
+  // Runtime flags
   RUNNING_LOCAL: boolean;
-  FORCE: boolean;
+
+  // Dynamic context (set at runtime)
   USER: string;
   REPOSITORY: string;
   SHA: string;
   IS_PR: boolean;
-  PR_NUMBER?: number | undefined;
+  PR_NUMBER?: number;
   REF: string;
   BRANCH: string;
   LOG_URL: string;
@@ -33,55 +47,57 @@ export interface Config {
   IS_FORK: boolean;
 }
 
+// Commit metadata interface
 export interface Commit {
-  authorName: string;
-  authorLogin: string;
-  commitMessage: string;
+  readonly authorName: string;
+  readonly authorLogin: string;
+  readonly commitMessage: string;
 }
 
+// GitHub API response interfaces
 export interface GitHubDeployment {
-  id: number;
-  [key: string]: unknown;
+  readonly id: number;
 }
 
 export interface GitHubDeploymentStatus {
-  [key: string]: unknown;
+  readonly id: number;
+  readonly state: string;
 }
 
 export interface GitHubComment {
-  id: number;
-  html_url: string;
-  body?: string;
-  [key: string]: unknown;
+  readonly id: number;
+  readonly html_url: string;
+  readonly body?: string;
 }
 
 export interface GitHubLabel {
-  name: string;
-  [key: string]: unknown;
+  readonly name: string;
 }
 
+// Vercel API response interface
 export interface VercelDeployment {
-  id: string;
-  inspectorUrl: string;
-  [key: string]: unknown;
+  readonly id: string;
+  readonly inspectorUrl: string;
+  readonly url: string;
 }
 
+// Client interfaces for better abstraction
 export interface GitHubClient {
-  client: ReturnType<typeof import("@actions/github").getOctokit>;
-  createDeployment: () => Promise<GitHubDeployment>;
-  updateDeployment: (
+  readonly client: ReturnType<typeof import("@actions/github").getOctokit>;
+  createDeployment(): Promise<GitHubDeployment>;
+  updateDeployment(
     status: string,
     url?: string
-  ) => Promise<GitHubDeploymentStatus | undefined>;
-  deleteExistingComment: () => Promise<number | undefined>;
-  createComment: (body: string) => Promise<GitHubComment>;
-  addLabel: () => Promise<GitHubLabel[]>;
-  getCommit: () => Promise<Commit>;
+  ): Promise<GitHubDeploymentStatus | undefined>;
+  deleteExistingComment(): Promise<number | undefined>;
+  createComment(body: string): Promise<GitHubComment>;
+  addLabel(): Promise<readonly GitHubLabel[]>;
+  getCommit(): Promise<Commit>;
 }
 
 export interface VercelClient {
-  deploy: (commit?: Commit) => Promise<string>;
-  assignAlias: (aliasUrl: string) => Promise<string>;
-  deploymentUrl: string;
-  getDeployment: () => Promise<VercelDeployment>;
+  deploy(commit?: Commit): Promise<string>;
+  assignAlias(aliasUrl: string): Promise<string>;
+  getDeployment(): Promise<VercelDeployment>;
+  readonly deploymentUrl: string;
 }

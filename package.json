@@ -8,7 +8,8 @@
     "lint:fix": "eslint ./src --ext .ts --fix",
     "dev": "ts-node src/index.ts",
     "start": "node dist/index.js",
-    "build": "tsc && ncc build dist/index.js -o dist",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --outfile=dist/index.js --format=cjs --minify --sourcemap",
+    "build:fast": "esbuild src/index.ts --bundle --platform=node --target=node22 --outfile=dist/index.js --format=cjs",
     "type-check": "tsc --noEmit"
   },
   "repository": {
@@ -37,12 +38,13 @@
     "@typescript-eslint/eslint-plugin": "^8.39.1",
     "@typescript-eslint/parser": "^8.39.1",
     "@vercel/ncc": "^0.38.3",
+    "esbuild": "^0.25.9",
     "eslint": "^9.33.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "packageManager": "pnpm@10.14.0"
 }

@@ -1,53 +1,97 @@
 import * as core from "@actions/core";
-import { spawn } from "child_process";
+import { spawn, type SpawnOptions } from "child_process";
 
-const execCmd = (
+// URL schema constants
+const URL_SCHEMA_REGEX = /^https?:\/\//;
+
+/**
+ * Execute a command with better error handling and logging
+ */
+const execCmd = async (
   command: string,
-  args: string[],
-  cwd?: string,
+  args: readonly string[],
+  cwd?: string
 ): Promise<string> => {
-  core.debug(`EXEC: "${command} ${args}" in ${cwd || "."}`);
+  core.debug(`EXEC: "${command} ${args.join(" ")}" in ${cwd || "."}`);
+
   return new Promise((resolve, reject) => {
-    const process = spawn(command, args, { cwd });
+    const options: SpawnOptions = {
+      cwd,
+      stdio: ["pipe", "pipe", "pipe"],
+    };
+
+    const process = spawn(command, args, options);
     let stdout = "";
     let stderr = "";
 
-    process.stdout.on("data", (data) => {
-      core.debug(data.toString());
-      if (data !== undefined && data.length > 0) {
-        stdout += data;
-      }
+    // Handle stdout
+    process.stdout?.on("data", (data: Buffer) => {
+      const output = data.toString();
+      core.debug(output);
+      stdout += output;
     });
 
-    process.stderr.on("data", (data) => {
-      core.debug(data.toString());
-      if (data !== undefined && data.length > 0) {
-        stderr += data;
-      }
+    // Handle stderr
+    process.stderr?.on("data", (data: Buffer) => {
+      const output = data.toString();
+      core.debug(output);
+      stderr += output;
     });
 
-    process.on("close", (code) => {
+    // Handle process completion
+    process.on("close", (code: number | null) => {
       if (code !== 0) {
-        reject(new Error(stderr));
+        const error = stderr || `Command failed with exit code ${code}`;
+        reject(new Error(error));
       } else {
         resolve(stdout.trim());
       }
     });
+
+    // Handle process errors
+    process.on("error", (error: Error) => {
+      reject(new Error(`Failed to start process: ${error.message}`));
+    });
   });
 };
 
+/**
+ * Add HTTPS schema to URL if missing
+ */
 const addSchema = (url: string): string => {
-  const regex = /^https?:\/\//;
-  if (!regex.test(url)) {
-    return `https://${url}`;
-  }
-
-  return url;
+  return URL_SCHEMA_REGEX.test(url) ? url : `https://${url}`;
 };
 
+/**
+ * Remove HTTP/HTTPS schema from URL
+ */
 const removeSchema = (url: string): string => {
-  const regex = /^https?:\/\//;
-  return url.replace(regex, "");
+  return url.replace(URL_SCHEMA_REGEX, "");
 };
 
-export { execCmd as exec, addSchema, removeSchema };
+/**
+ * Validate and sanitize URL
+ */
+const validateUrl = (url: string): boolean => {
+  try {
+    new URL(addSchema(url));
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Create a safe filename from string
+ */
+const sanitizeFilename = (str: string): string => {
+  return str.replace(/[^a-z0-9]/gi, "-").toLowerCase();
+};
+
+export {
+  execCmd as exec,
+  addSchema,
+  removeSchema,
+  validateUrl,
+  sanitizeFilename,
+};
