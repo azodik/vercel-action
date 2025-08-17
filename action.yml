@@ -1,5 +1,5 @@
-name: 'Vercel Deployment Action'
-description: 'Automatically deploy your applications to Vercel with GitHub Actions. Features PR previews, custom domains, and seamless integration.'
+name: 'Azodik Vercel Deploy Action'
+description: 'Deploy to Vercel with GitHub Actions. PR previews, custom domains, fast builds.'
 author: 'Jai Sharma'
 
 inputs:
@@ -103,5 +103,5 @@ runs:
   main: 'dist/index.js'
 
 branding:
-  icon: 'rocket'
+  icon: 'activity'
   color: 'blue'
