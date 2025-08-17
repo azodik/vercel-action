@@ -8,8 +8,8 @@
     "lint:fix": "eslint ./src --ext .ts --fix",
     "dev": "ts-node src/index.ts",
     "start": "node dist/index.js",
-    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --outfile=dist/index.js --format=cjs --minify --sourcemap",
-    "build:fast": "esbuild src/index.ts --bundle --platform=node --target=node22 --outfile=dist/index.js --format=cjs",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node24 --outfile=dist/index.js --format=cjs --minify --sourcemap",
+    "build:fast": "esbuild src/index.ts --bundle --platform=node --target=node24 --outfile=dist/index.js --format=cjs",
     "type-check": "tsc --noEmit"
   },
   "repository": {
@@ -44,7 +44,7 @@
     "typescript": "^5.9.2"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   },
   "packageManager": "pnpm@10.14.0"
 }

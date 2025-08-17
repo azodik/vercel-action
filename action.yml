@@ -99,7 +99,7 @@ outputs:
     description: 'Unique Vercel deployment URL for this specific deployment.'
 
 runs:
-  using: 'node22'
+  using: 'node24'
   main: 'dist/index.js'
 
 branding:
